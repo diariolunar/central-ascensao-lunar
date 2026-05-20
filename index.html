@@ -8,254 +8,327 @@
 </head>
 
 <body>
-  <section id="loginScreen" class="login-screen">
-    <div class="login-card">
-      <div class="brand-symbol">🌙</div>
-      <h1>Central Ascensão Lunar</h1>
-      <p>Painel administrativo para membros, textos, atividades, pontuações e ranking.</p>
+  <div class="app">
 
-      <form id="loginForm" class="form">
-        <label>E-mail</label>
-        <input id="loginEmail" type="email" required />
-
-        <label>Senha</label>
-        <input id="loginPassword" type="password" required />
-
-        <button class="btn btn-primary" type="submit">Entrar</button>
-        <p id="loginMessage" class="message"></p>
-      </form>
-    </div>
-  </section>
-
-  <section id="mainApp" class="main-app hidden">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-logo">🌙</div>
-        <div>
-          <h2>Ascensão</h2>
-          <span>Central Lunar</span>
+    <section id="loginScreen" class="login-screen">
+      <div class="login-card">
+        <div class="brand-area">
+          <div class="brand-symbol">🌙</div>
+          <h1>Central Ascensão Lunar</h1>
+          <p>Painel administrativo para membros, pontos, ranking, atividades e textos.</p>
         </div>
+
+        <form id="loginForm" class="form">
+          <label for="loginEmail">E-mail</label>
+          <input type="email" id="loginEmail" placeholder="Digite seu e-mail" required />
+
+          <label for="loginPassword">Senha</label>
+          <input type="password" id="loginPassword" placeholder="Digite sua senha" required />
+
+          <button type="submit" class="btn btn-primary">Entrar</button>
+          <p id="loginMessage" class="message"></p>
+        </form>
       </div>
+    </section>
 
-      <nav class="menu">
-        <button class="menu-btn active" data-page="dashboardPage">Início</button>
-        <button class="menu-btn" data-page="registerPage">Cadastro</button>
-        <button class="menu-btn" data-page="membersPage">Membros</button>
-        <button class="menu-btn" data-page="pointsPage">Pontuações</button>
-        <button class="menu-btn" data-page="rankingPage">Ranking</button>
-        <button class="menu-btn" data-page="activitiesPage">Atividades</button>
-        <button class="menu-btn" data-page="textsPage">Textos</button>
-      </nav>
-
-      <button id="logoutBtn" class="btn btn-secondary logout-btn">Sair</button>
-    </aside>
-
-    <main class="content">
-      <header class="topbar">
-        <div>
-          <h1 id="pageTitle">Início</h1>
-          <p id="pageSubtitle">Visão geral da Central Ascensão Lunar.</p>
-        </div>
-        <div class="user-pill">Administrador</div>
-      </header>
-
-      <section id="dashboardPage" class="page active-page">
-        <div class="stats-grid">
-          <article class="stat-card"><span>Membros</span><strong id="totalMembers">0</strong></article>
-          <article class="stat-card"><span>Pontos gerais</span><strong id="totalPoints">0</strong></article>
-          <article class="stat-card"><span>Atividades</span><strong id="openActivities">0</strong></article>
-          <article class="stat-card"><span>Textos</span><strong id="totalTexts">0</strong></article>
+    <section id="mainApp" class="main-app hidden">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-logo">🌙</div>
+          <div>
+            <h2>Ascensão</h2>
+            <span>Central Lunar</span>
+          </div>
         </div>
 
-        <div class="panel">
-          <h2>Últimas pontuações</h2>
-          <div id="latestMovements" class="list"></div>
-        </div>
-      </section>
+        <nav class="menu">
+          <button class="menu-btn active" data-page="dashboardPage">🏠 Início</button>
+          <button class="menu-btn" data-page="registerPage">✨ Cadastro</button>
+          <button class="menu-btn" data-page="membersPage">👥 Membros</button>
+          <button class="menu-btn" data-page="pointsPage">⭐ Pontuações</button>
+          <button class="menu-btn" data-page="rankingPage">🏆 Ranking</button>
+          <button class="menu-btn" data-page="activitiesPage">📌 Atividades</button>
+          <button class="menu-btn" data-page="textsPage">📚 Textos</button>
+        </nav>
 
-      <section id="registerPage" class="page">
-        <div class="two-columns">
+        <button id="logoutBtn" class="btn btn-secondary logout-btn">Sair</button>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <h1 id="pageTitle">Início</h1>
+            <p id="pageSubtitle">Visão geral da Central Ascensão Lunar.</p>
+          </div>
+
+          <div class="user-pill">
+            <span>Administrador</span>
+          </div>
+        </header>
+
+        <section id="dashboardPage" class="page active-page">
+          <div class="stats-grid">
+            <article class="stat-card">
+              <span>Total de membros</span>
+              <strong id="totalMembers">0</strong>
+            </article>
+
+            <article class="stat-card">
+              <span>Pontos distribuídos</span>
+              <strong id="totalPoints">0</strong>
+            </article>
+
+            <article class="stat-card">
+              <span>Atividades abertas</span>
+              <strong id="openActivities">0</strong>
+            </article>
+
+            <article class="stat-card">
+              <span>Textos cadastrados</span>
+              <strong id="totalTexts">0</strong>
+            </article>
+          </div>
+
           <div class="panel">
-            <h2>Cadastrar membro por ficha</h2>
-            <p class="hint">Cole a ficha do membro. O sistema vai tentar reconhecer os campos automaticamente.</p>
+            <h2>Últimas movimentações</h2>
+            <div id="latestMovements" class="list">
+              <div class="empty-state">Nenhuma movimentação registrada ainda.</div>
+            </div>
+          </div>
+        </section>
 
-            <form id="memberPreviewForm" class="form">
-              <label>Ficha do membro</label>
-              <textarea id="memberSheet" rows="16" required placeholder="Nome:
+        <section id="registerPage" class="page">
+          <div class="two-columns">
+            <div class="panel">
+              <h2>Cadastrar membro por ficha</h2>
+              <p class="hint">
+                Cole a ficha do membro. Depois clique em processar para ver o preview antes de salvar.
+              </p>
+
+              <form id="parseMemberForm" class="form">
+                <label for="memberSheet">Ficha do membro</label>
+                <textarea id="memberSheet" rows="16" placeholder="Nome:
 User:
 Obra:
 Gênero:
 Link:
+Wattpad:
 Instagram:
 Idade:
-Objetivo:
-Dificuldade:"></textarea>
+Status:
+Observações:"></textarea>
 
-              <button type="submit" class="btn btn-primary">Gerar prévia</button>
-            </form>
+                <button type="submit" class="btn btn-primary">Processar ficha</button>
+              </form>
+            </div>
+
+            <div class="panel">
+              <h2>Preview do card</h2>
+
+              <div id="memberPreview" class="empty-state">
+                O preview aparecerá aqui depois de processar a ficha.
+              </div>
+
+              <button id="savePreviewMemberBtn" class="btn btn-primary full-btn hidden">
+                Salvar membro
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section id="membersPage" class="page">
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Filtros de membros</h2>
+              <span id="membersCount">0 membros</span>
+            </div>
+
+            <div class="filters-grid">
+              <div class="form">
+                <label for="memberSearch">Buscar</label>
+                <input type="text" id="memberSearch" placeholder="Nome, user, obra ou gênero" />
+              </div>
+
+              <div class="form">
+                <label for="memberStatusFilter">Status</label>
+                <select id="memberStatusFilter">
+                  <option value="">Todos</option>
+                  <option value="Ativo">Ativo</option>
+                  <option value="Novo">Novo</option>
+                  <option value="Em acompanhamento">Em acompanhamento</option>
+                  <option value="Inativo">Inativo</option>
+                  <option value="Afastado">Afastado</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div class="panel">
-            <h2>Prévia do card</h2>
-            <div id="memberPreview" class="empty-state">A prévia aparecerá aqui.</div>
-            <button id="savePreviewMemberBtn" class="btn btn-primary hidden">Salvar membro</button>
-          </div>
-        </div>
-      </section>
-
-      <section id="membersPage" class="page">
-        <div class="panel">
-          <div class="panel-header">
             <h2>Cards de membros</h2>
-            <span id="membersCount">0 membros</span>
+            <div id="membersList" class="cards-grid">
+              <div class="empty-state">Nenhum membro cadastrado ainda.</div>
+            </div>
           </div>
+        </section>
 
-          <div class="filters">
-            <input id="memberSearch" placeholder="Buscar por nome, user ou obra" />
-            <select id="memberStatusFilter">
-              <option value="">Todos os status</option>
-              <option value="Novo">Novo</option>
-              <option value="Ativo">Ativo</option>
-              <option value="Em acompanhamento">Em acompanhamento</option>
-              <option value="Inativo">Inativo</option>
-            </select>
-          </div>
+        <section id="pointsPage" class="page">
+          <div class="two-columns">
+            <div class="panel">
+              <h2>Lançar pontuação</h2>
 
-          <div id="membersList" class="cards-grid"></div>
-        </div>
-      </section>
+              <form id="pointsForm" class="form">
+                <label for="pointsMember">Membro</label>
+                <select id="pointsMember" required>
+                  <option value="">Selecione um membro</option>
+                </select>
 
-      <section id="pointsPage" class="page">
-        <div class="two-columns">
-          <div class="panel">
-            <h2>Lançar pontuação</h2>
+                <label for="pointsValue">Quantidade</label>
+                <input type="number" id="pointsValue" placeholder="100 ou -20" required />
 
-            <form id="pointsForm" class="form">
-              <label>Membro</label>
-              <select id="pointsMember" required></select>
+                <label for="pointsReason">Motivo</label>
+                <input type="text" id="pointsReason" placeholder="Entregou atividade" required />
 
-              <label>Pontos</label>
-              <input id="pointsValue" type="number" required />
+                <label for="pointsDate">Data</label>
+                <input type="date" id="pointsDate" required />
 
-              <label>Motivo</label>
-              <input id="pointsReason" required />
-
-              <label>Data</label>
-              <input id="pointsDate" type="date" required />
-
-              <button class="btn btn-primary" type="submit">Salvar pontuação</button>
-            </form>
-          </div>
-
-          <div class="panel">
-            <h2>Histórico</h2>
-            <div id="pointsHistory" class="list"></div>
-          </div>
-        </div>
-      </section>
-
-      <section id="rankingPage" class="page">
-        <div class="panel">
-          <h2>Ranking quinzenal</h2>
-
-          <form id="rankingForm" class="form inline-form">
-            <div>
-              <label>Início</label>
-              <input id="rankingStart" type="date" required />
+                <button type="submit" class="btn btn-primary">Salvar pontuação</button>
+              </form>
             </div>
 
-            <div>
-              <label>Fim</label>
-              <input id="rankingEnd" type="date" required />
+            <div class="panel">
+              <h2>Histórico</h2>
+              <div id="pointsHistory" class="list">
+                <div class="empty-state">Nenhum ponto lançado ainda.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="rankingPage" class="page">
+          <div class="panel">
+            <h2>Ranking quinzenal</h2>
+
+            <form id="rankingForm" class="form inline-form">
+              <div>
+                <label for="rankingStart">Início</label>
+                <input type="date" id="rankingStart" required />
+              </div>
+
+              <div>
+                <label for="rankingEnd">Fim</label>
+                <input type="date" id="rankingEnd" required />
+              </div>
+
+              <button type="submit" class="btn btn-primary">Gerar ranking</button>
+            </form>
+          </div>
+
+          <div id="rankingTopThree" class="top-three"></div>
+
+          <div class="panel">
+            <h2>Ranking completo</h2>
+            <div id="rankingList" class="ranking-list">
+              <div class="empty-state">Escolha um período para gerar o ranking.</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="activitiesPage" class="page">
+          <div class="two-columns">
+            <div class="panel">
+              <h2>Nova atividade</h2>
+
+              <form id="activityForm" class="form">
+                <label for="activityTitle">Título</label>
+                <input type="text" id="activityTitle" required />
+
+                <label for="activityDescription">Descrição</label>
+                <textarea id="activityDescription" rows="5"></textarea>
+
+                <label for="activityDeadline">Prazo</label>
+                <input type="date" id="activityDeadline" />
+
+                <label for="activityPoints">Pontos</label>
+                <input type="number" id="activityPoints" />
+
+                <label for="activityStatus">Status</label>
+                <select id="activityStatus">
+                  <option value="Aberta">Aberta</option>
+                  <option value="Encerrada">Encerrada</option>
+                  <option value="Cancelada">Cancelada</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary">Criar atividade</button>
+              </form>
             </div>
 
-            <button class="btn btn-primary" type="submit">Gerar ranking</button>
-          </form>
-        </div>
+            <div class="panel">
+              <h2>Atividades</h2>
+              <div id="activitiesList" class="list">
+                <div class="empty-state">Nenhuma atividade cadastrada ainda.</div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-        <div id="rankingTop" class="top-ranking"></div>
+        <section id="textsPage" class="page">
+          <div class="two-columns">
+            <div class="panel">
+              <h2>Cadastrar texto</h2>
 
-        <div class="panel">
-          <h2>Lista completa</h2>
-          <div id="rankingList" class="ranking-list"></div>
-        </div>
-      </section>
+              <form id="textForm" class="form">
+                <label for="textMember">Autor</label>
+                <select id="textMember" required>
+                  <option value="">Selecione um membro</option>
+                </select>
 
-      <section id="activitiesPage" class="page">
-        <div class="two-columns">
-          <div class="panel">
-            <h2>Nova atividade</h2>
+                <label for="textTitle">Título</label>
+                <input type="text" id="textTitle" required />
 
-            <form id="activityForm" class="form">
-              <label>Título</label>
-              <input id="activityTitle" required />
+                <label for="textType">Tipo</label>
+                <select id="textType">
+                  <option value="Sinopse">Sinopse</option>
+                  <option value="Prólogo">Prólogo</option>
+                  <option value="Capítulo">Capítulo</option>
+                  <option value="Cena">Cena</option>
+                  <option value="Pitch">Pitch</option>
+                  <option value="Outro">Outro</option>
+                </select>
 
-              <label>Descrição</label>
-              <textarea id="activityDescription" rows="5"></textarea>
+                <label for="textContent">Texto, link ou observação</label>
+                <textarea id="textContent" rows="8"></textarea>
 
-              <label>Prazo</label>
-              <input id="activityDeadline" type="date" />
+                <label for="textStatus">Status</label>
+                <select id="textStatus">
+                  <option value="Pendente">Pendente</option>
+                  <option value="Lido">Lido</option>
+                  <option value="Comentado">Comentado</option>
+                  <option value="Revisado">Revisado</option>
+                  <option value="Devolvido">Devolvido</option>
+                </select>
 
-              <label>Pontos</label>
-              <input id="activityPoints" type="number" />
+                <button type="submit" class="btn btn-primary">Salvar texto</button>
+              </form>
+            </div>
 
-              <button class="btn btn-primary" type="submit">Criar atividade</button>
-            </form>
+            <div class="panel">
+              <h2>Biblioteca de textos</h2>
+              <div id="textsList" class="list">
+                <div class="empty-state">Nenhum texto cadastrado ainda.</div>
+              </div>
+            </div>
           </div>
 
           <div class="panel">
-            <h2>Atividades</h2>
-            <div id="activitiesList" class="list"></div>
+            <h2>Visualização</h2>
+            <div id="textViewer" class="text-viewer empty-state">
+              Selecione um texto para visualizar.
+            </div>
           </div>
-        </div>
-      </section>
-
-      <section id="textsPage" class="page">
-        <div class="two-columns">
-          <div class="panel">
-            <h2>Cadastrar texto</h2>
-
-            <form id="textForm" class="form">
-              <label>Autor</label>
-              <select id="textMember" required></select>
-
-              <label>Título</label>
-              <input id="textTitle" required />
-
-              <label>Tipo</label>
-              <select id="textType">
-                <option>Sinopse</option>
-                <option>Prólogo</option>
-                <option>Capítulo</option>
-                <option>Cena</option>
-                <option>Pitch</option>
-                <option>Outro</option>
-              </select>
-
-              <label>Status</label>
-              <select id="textStatus">
-                <option>Pendente</option>
-                <option>Lido</option>
-                <option>Comentado</option>
-                <option>Revisado</option>
-                <option>Devolvido</option>
-              </select>
-
-              <label>Texto, link ou observação</label>
-              <textarea id="textContent" rows="8"></textarea>
-
-              <button class="btn btn-primary" type="submit">Salvar texto</button>
-            </form>
-          </div>
-
-          <div class="panel">
-            <h2>Biblioteca</h2>
-            <div id="textsList" class="list"></div>
-          </div>
-        </div>
-      </section>
-    </main>
-  </section>
+        </section>
+      </main>
+    </section>
+  </div>
 
   <script type="module" src="js/app.js"></script>
 </body>
