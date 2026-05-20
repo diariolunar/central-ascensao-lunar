@@ -2,86 +2,114 @@
   CENTRAL ASCENSÃO LUNAR
   Arquivo: js/firebase.js
 
-  Este arquivo conecta o sistema ao Firebase.
-  Aqui ficam:
+  RESPONSÁVEL POR:
+  - conectar o sistema ao Firebase
   - autenticação
-  - banco de dados
-  - exportações das funções Firebase
+  - banco de dados Firestore
+
+  IMPORTANTE:
+  Este projeto usa Firebase via CDN.
+  Não precisa instalar nada.
 */
 
-/*
-  IMPORTANDO FIREBASE VIA CDN
+/* =========================
+   IMPORTA FIREBASE APP
+========================= */
 
-  Como não estamos usando npm ou terminal,
-  vamos usar o Firebase diretamente pela internet.
-*/
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+/* =========================
+   IMPORTA AUTH
+========================= */
 
 import {
   getAuth,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+/* =========================
+   IMPORTA FIRESTORE
+========================= */
 
 import {
   getFirestore,
+
   collection,
   addDoc,
   getDocs,
+
   doc,
   updateDoc,
   deleteDoc,
+
   query,
   orderBy,
+
   Timestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/*
-  CONFIGURAÇÃO DO FIREBASE
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-  VOCÊ VAI TROCAR ISSO PELOS DADOS DO SEU PROJETO.
-*/
+/* =========================
+   CONFIG FIREBASE
+========================= */
 
 const firebaseConfig = {
-  apiKey: "COLE_AQUI",
-  authDomain: "COLE_AQUI",
-  projectId: "COLE_AQUI",
-  storageBucket: "COLE_AQUI",
-  messagingSenderId: "COLE_AQUI",
-  appId: "COLE_AQUI"
+  apiKey: "AIzaSyBjZmPN2PheKgbG34dGmFR7j_rs5QZEUAg",
+  authDomain: "central-ascensao-lunar.firebaseapp.com",
+  projectId: "central-ascensao-lunar",
+  storageBucket: "central-ascensao-lunar.firebasestorage.app",
+  messagingSenderId: "283153766319",
+  appId: "1:283153766319:web:7e255d8e6023f61f07815a"
 };
 
-/* Inicializa Firebase */
+/* =========================
+   INICIALIZA FIREBASE
+========================= */
+
 const app = initializeApp(firebaseConfig);
 
-/* Inicializa autenticação */
+/* =========================
+   AUTH
+========================= */
+
 const auth = getAuth(app);
 
-/* Inicializa banco */
+/* =========================
+   FIRESTORE DATABASE
+========================= */
+
 const db = getFirestore(app);
 
-/*
-  EXPORTA TUDO
-  Assim o app.js consegue usar.
-*/
+/* =========================
+   EXPORTA TUDO
+========================= */
 
 export {
-  auth,
-  db,
 
+  /* App */
+  app,
+
+  /* Auth */
+  auth,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
 
+  /* Database */
+  db,
+
   collection,
   addDoc,
   getDocs,
+
   doc,
   updateDoc,
   deleteDoc,
+
   query,
   orderBy,
+
   Timestamp
 };
