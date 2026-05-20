@@ -1,18 +1,8 @@
 /*
   CENTRAL ASCENSÃO LUNAR
   Arquivo: js/app.js
-
-  Este arquivo controla:
-  - login
-  - navegação
-  - membros
-  - pontuações
-  - ranking
-  - atividades
-  - textos
 */
 
-/* Importa Firebase */
 import {
   auth,
   db,
@@ -24,65 +14,51 @@ import {
   collection,
   addDoc,
   getDocs,
+  doc,
+  updateDoc,
   query,
   orderBy,
   Timestamp
 
 } from "./firebase.js";
 
-/* =========================
-   ELEMENTOS DO HTML
-========================= */
-
-/* Login */
+/* ELEMENTOS */
 const loginForm = document.getElementById("loginForm");
 const loginMessage = document.getElementById("loginMessage");
 
-/* Telas */
 const loginScreen = document.getElementById("loginScreen");
 const mainApp = document.getElementById("mainApp");
 
-/* Navegação */
 const menuButtons = document.querySelectorAll(".menu-btn");
 const pages = document.querySelectorAll(".page");
 
-/* Dashboard */
 const totalMembers = document.getElementById("totalMembers");
 const totalPoints = document.getElementById("totalPoints");
 const openActivities = document.getElementById("openActivities");
 const totalTexts = document.getElementById("totalTexts");
 
-/* Membros */
 const memberForm = document.getElementById("memberForm");
 const memberSheet = document.getElementById("memberSheet");
 const membersList = document.getElementById("membersList");
 const membersCount = document.getElementById("membersCount");
 
-/* Pontos */
 const pointsForm = document.getElementById("pointsForm");
 const pointsMember = document.getElementById("pointsMember");
 const pointsHistory = document.getElementById("pointsHistory");
 
-/* Ranking */
 const rankingForm = document.getElementById("rankingForm");
 const rankingList = document.getElementById("rankingList");
 
-/* Atividades */
 const activityForm = document.getElementById("activityForm");
 const activitiesList = document.getElementById("activitiesList");
 
-/* Textos */
 const textForm = document.getElementById("textForm");
 const textMember = document.getElementById("textMember");
 const textsList = document.getElementById("textsList");
 
-/* Logout */
 const logoutBtn = document.getElementById("logoutBtn");
 
-/* =========================
-   LOGIN
-========================= */
-
+/* LOGIN */
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -91,25 +67,16 @@ loginForm.addEventListener("submit", async (event) => {
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
-
     loginMessage.textContent = "";
-
   } catch (error) {
     console.error(error);
-
-    loginMessage.textContent =
-      "Erro ao entrar. Verifique e-mail e senha.";
+    loginMessage.textContent = "Erro ao entrar. Verifique e-mail e senha.";
   }
 });
 
-/* =========================
-   OBSERVA LOGIN
-========================= */
-
+/* OBSERVA LOGIN */
 onAuthStateChanged(auth, (user) => {
-
   if (user) {
-
     loginScreen.classList.add("hidden");
     mainApp.classList.remove("hidden");
 
@@ -117,137 +84,76 @@ onAuthStateChanged(auth, (user) => {
     loadPoints();
     loadActivities();
     loadTexts();
-
   } else {
-
     loginScreen.classList.remove("hidden");
     mainApp.classList.add("hidden");
   }
 });
 
-/* =========================
-   LOGOUT
-========================= */
-
+/* SAIR */
 logoutBtn.addEventListener("click", async () => {
   await signOut(auth);
 });
 
-/* =========================
-   NAVEGAÇÃO
-========================= */
-
+/* NAVEGAÇÃO */
 menuButtons.forEach((button) => {
-
   button.addEventListener("click", () => {
-
-    /* Remove ativo */
-    menuButtons.forEach(btn => btn.classList.remove("active"));
-
-    /* Ativa botão atual */
+    menuButtons.forEach((btn) => btn.classList.remove("active"));
     button.classList.add("active");
 
-    /* Esconde páginas */
-    pages.forEach(page => {
-      page.classList.remove("active-page");
-    });
+    pages.forEach((page) => page.classList.remove("active-page"));
 
-    /* Mostra página clicada */
     const target = button.dataset.page;
-
-    document
-      .getElementById(target)
-      .classList.add("active-page");
+    document.getElementById(target).classList.add("active-page");
   });
 });
 
-/* =========================
-   CADASTRAR MEMBRO
-========================= */
-
+/* CADASTRAR MEMBRO */
 memberForm.addEventListener("submit", async (event) => {
-
   event.preventDefault();
 
   const text = memberSheet.value;
 
-  /*
-    Tenta identificar campos automaticamente
-  */
-
-  const name =
-    extractField(text, "Nome") || "Sem nome";
-
-  const user =
-    extractField(text, "User") || "Sem user";
-
-  const work =
-    extractField(text, "Obra") || "Não informado";
-
-  const genre =
-    extractField(text, "Gênero") || "Não informado";
+  const name = extractField(text, "Nome") || "Sem nome";
+  const user = extractField(text, "User") || "Sem user";
+  const work = extractField(text, "Obra") || "Não informado";
+  const genre = extractField(text, "Gênero") || "Não informado";
 
   const member = {
-
     name,
     user,
     work,
     genre,
-
     points: 0,
-
     createdAt: Timestamp.now()
   };
 
   try {
-
-    await addDoc(
-      collection(db, "members"),
-      member
-    );
+    await addDoc(collection(db, "members"), member);
 
     memberForm.reset();
-
     loadMembers();
-
   } catch (error) {
-
     console.error(error);
-
     alert("Erro ao cadastrar membro.");
   }
 });
 
-/* =========================
-   CARREGAR MEMBROS
-========================= */
-
+/* CARREGAR MEMBROS */
 async function loadMembers() {
-
-  const q = query(
-    collection(db, "members"),
-    orderBy("createdAt", "desc")
-  );
-
+  const q = query(collection(db, "members"), orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
 
   membersList.innerHTML = "";
-
-  pointsMember.innerHTML =
-    `<option value="">Selecione um membro</option>`;
-
-  textMember.innerHTML =
-    `<option value="">Selecione um membro</option>`;
+  pointsMember.innerHTML = `<option value="">Selecione um membro</option>`;
+  textMember.innerHTML = `<option value="">Selecione um membro</option>`;
 
   let total = 0;
 
   snapshot.forEach((docItem) => {
-
     const member = docItem.data();
-
     total++;
 
-    /* Adiciona nos selects */
     pointsMember.innerHTML += `
       <option value="${docItem.id}">
         ${member.name}
@@ -260,15 +166,11 @@ async function loadMembers() {
       </option>
     `;
 
-    /* Card */
     membersList.innerHTML += `
       <article class="member-card">
-
         <div class="member-top">
-
           <div>
             <h3>${member.name}</h3>
-
             <p>${member.user}</p>
           </div>
 
@@ -277,84 +179,81 @@ async function loadMembers() {
           </div>
         </div>
 
-        <span class="badge">
-          ${member.genre}
-        </span>
+        <span class="badge">${member.genre}</span>
 
         <p style="margin-top:14px;">
-          <strong>Obra:</strong>
-          ${member.work}
+          <strong>Obra:</strong> ${member.work}
         </p>
-
       </article>
     `;
   });
 
-  membersCount.textContent =
-    `${total} membros`;
+  if (total === 0) {
+    membersList.innerHTML = `
+      <div class="empty-state">
+        Nenhum membro cadastrado ainda.
+      </div>
+    `;
+  }
 
+  membersCount.textContent = `${total} membros`;
   totalMembers.textContent = total;
 }
 
-/* =========================
-   PONTUAÇÃO
-========================= */
-
+/* LANÇAR PONTOS */
 pointsForm.addEventListener("submit", async (event) => {
-
   event.preventDefault();
 
   const memberId = pointsMember.value;
-
-  const value =
-    Number(document.getElementById("pointsValue").value);
-
-  const reason =
-    document.getElementById("pointsReason").value;
-
-  const date =
-    document.getElementById("pointsDate").value;
+  const value = Number(document.getElementById("pointsValue").value);
+  const reason = document.getElementById("pointsReason").value;
+  const date = document.getElementById("pointsDate").value;
 
   const point = {
-
     memberId,
     value,
     reason,
     date,
-
     createdAt: Timestamp.now()
   };
 
   try {
+    await addDoc(collection(db, "points"), point);
 
-    await addDoc(
-      collection(db, "points"),
-      point
-    );
+    const membersSnapshot = await getDocs(collection(db, "members"));
+
+    let currentMember = null;
+
+    membersSnapshot.forEach((docItem) => {
+      if (docItem.id === memberId) {
+        currentMember = {
+          id: docItem.id,
+          ...docItem.data()
+        };
+      }
+    });
+
+    if (currentMember) {
+      const memberRef = doc(db, "members", currentMember.id);
+
+      await updateDoc(memberRef, {
+        points: Number(currentMember.points || 0) + value
+      });
+    }
 
     pointsForm.reset();
 
     loadPoints();
-
+    loadMembers();
   } catch (error) {
-
     console.error(error);
-
     alert("Erro ao lançar pontos.");
   }
 });
 
-/* =========================
-   CARREGAR PONTOS
-========================= */
-
+/* CARREGAR PONTOS */
 async function loadPoints() {
-
-  const q = query(
-    collection(db, "points"),
-    orderBy("createdAt", "desc")
-  );
-
+  const q = query(collection(db, "points"), orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
 
   pointsHistory.innerHTML = "";
@@ -362,93 +261,70 @@ async function loadPoints() {
   let total = 0;
 
   snapshot.forEach((docItem) => {
-
     const item = docItem.data();
 
-    total += item.value;
+    total += Number(item.value || 0);
 
     const className =
-      item.value >= 0
-      ? "points-positive"
-      : "points-negative";
+      item.value >= 0 ? "points-positive" : "points-negative";
 
     pointsHistory.innerHTML += `
       <div class="history-item">
-
         <strong class="${className}">
-          ${item.value > 0 ? "+" : ""}
-          ${item.value} pontos
+          ${item.value > 0 ? "+" : ""}${item.value} pontos
         </strong>
 
-        <p>
-          ${item.reason}
-        </p>
-
-        <p>
-          ${item.date}
-        </p>
-
+        <p>${item.reason}</p>
+        <p>${item.date}</p>
       </div>
     `;
   });
 
+  if (snapshot.empty) {
+    pointsHistory.innerHTML = `
+      <div class="empty-state">
+        Nenhum ponto lançado ainda.
+      </div>
+    `;
+  }
+
   totalPoints.textContent = total;
 }
 
-/* =========================
-   RANKING
-========================= */
-
+/* RANKING */
 rankingForm.addEventListener("submit", async (event) => {
-
   event.preventDefault();
 
-  const start =
-    document.getElementById("rankingStart").value;
+  const start = document.getElementById("rankingStart").value;
+  const end = document.getElementById("rankingEnd").value;
 
-  const end =
-    document.getElementById("rankingEnd").value;
-
-  const snapshot = await getDocs(
-    collection(db, "points")
-  );
+  const pointsSnapshot = await getDocs(collection(db, "points"));
+  const membersSnapshot = await getDocs(collection(db, "members"));
 
   const ranking = {};
+  const membersMap = {};
 
-  snapshot.forEach((docItem) => {
+  membersSnapshot.forEach((docItem) => {
+    membersMap[docItem.id] = docItem.data();
+  });
 
+  pointsSnapshot.forEach((docItem) => {
     const item = docItem.data();
 
-    if (
-      item.date >= start &&
-      item.date <= end
-    ) {
-
+    if (item.date >= start && item.date <= end) {
       if (!ranking[item.memberId]) {
         ranking[item.memberId] = 0;
       }
 
-      ranking[item.memberId] += item.value;
+      ranking[item.memberId] += Number(item.value || 0);
     }
-  });
-
-  const membersSnapshot = await getDocs(
-    collection(db, "members")
-  );
-
-  const membersMap = {};
-
-  membersSnapshot.forEach((docItem) => {
-
-    membersMap[docItem.id] =
-      docItem.data();
   });
 
   const finalRanking = Object.entries(ranking)
     .map(([memberId, points]) => {
-
       return {
         name: membersMap[memberId]?.name || "Membro",
+        user: membersMap[memberId]?.user || "",
         points
       };
     })
@@ -457,93 +333,60 @@ rankingForm.addEventListener("submit", async (event) => {
   rankingList.innerHTML = "";
 
   if (finalRanking.length === 0) {
-
     rankingList.innerHTML = `
       <div class="empty-state">
         Nenhum ponto encontrado nesse período.
       </div>
     `;
-
     return;
   }
 
   finalRanking.forEach((item, index) => {
-
     rankingList.innerHTML += `
       <div class="ranking-item">
-
         <div class="ranking-position">
           #${index + 1}
         </div>
 
         <div>
           <strong>${item.name}</strong>
+          <p>${item.user}</p>
         </div>
 
         <div class="ranking-points">
           ${item.points}
         </div>
-
       </div>
     `;
   });
 });
 
-/* =========================
-   ATIVIDADES
-========================= */
-
+/* CRIAR ATIVIDADE */
 activityForm.addEventListener("submit", async (event) => {
-
   event.preventDefault();
 
   const activity = {
-
-    title:
-      document.getElementById("activityTitle").value,
-
-    description:
-      document.getElementById("activityDescription").value,
-
-    deadline:
-      document.getElementById("activityDeadline").value,
-
-    points:
-      Number(document.getElementById("activityPoints").value),
-
+    title: document.getElementById("activityTitle").value,
+    description: document.getElementById("activityDescription").value,
+    deadline: document.getElementById("activityDeadline").value,
+    points: Number(document.getElementById("activityPoints").value),
     createdAt: Timestamp.now()
   };
 
   try {
-
-    await addDoc(
-      collection(db, "activities"),
-      activity
-    );
+    await addDoc(collection(db, "activities"), activity);
 
     activityForm.reset();
-
     loadActivities();
-
   } catch (error) {
-
     console.error(error);
-
     alert("Erro ao criar atividade.");
   }
 });
 
-/* =========================
-   CARREGAR ATIVIDADES
-========================= */
-
+/* CARREGAR ATIVIDADES */
 async function loadActivities() {
-
-  const q = query(
-    collection(db, "activities"),
-    orderBy("createdAt", "desc")
-  );
-
+  const q = query(collection(db, "activities"), orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
 
   activitiesList.innerHTML = "";
@@ -551,94 +394,58 @@ async function loadActivities() {
   let total = 0;
 
   snapshot.forEach((docItem) => {
-
     const activity = docItem.data();
-
     total++;
 
     activitiesList.innerHTML += `
       <div class="activity-item">
+        <strong>${activity.title}</strong>
 
-        <strong>
-          ${activity.title}
-        </strong>
-
-        <p>
-          ${activity.description}
-        </p>
-
-        <p>
-          Prazo: ${activity.deadline || "Sem prazo"}
-        </p>
-
-        <p>
-          ${activity.points || 0} pontos
-        </p>
-
+        <p>${activity.description}</p>
+        <p>Prazo: ${activity.deadline || "Sem prazo"}</p>
+        <p>${activity.points || 0} pontos</p>
       </div>
     `;
   });
 
+  if (total === 0) {
+    activitiesList.innerHTML = `
+      <div class="empty-state">
+        Nenhuma atividade cadastrada ainda.
+      </div>
+    `;
+  }
+
   openActivities.textContent = total;
 }
 
-/* =========================
-   TEXTOS
-========================= */
-
+/* CADASTRAR TEXTO */
 textForm.addEventListener("submit", async (event) => {
-
   event.preventDefault();
 
   const text = {
-
     memberId: textMember.value,
-
-    title:
-      document.getElementById("textTitle").value,
-
-    type:
-      document.getElementById("textType").value,
-
-    content:
-      document.getElementById("textContent").value,
-
-    status:
-      document.getElementById("textStatus").value,
-
+    title: document.getElementById("textTitle").value,
+    type: document.getElementById("textType").value,
+    content: document.getElementById("textContent").value,
+    status: document.getElementById("textStatus").value,
     createdAt: Timestamp.now()
   };
 
   try {
-
-    await addDoc(
-      collection(db, "texts"),
-      text
-    );
+    await addDoc(collection(db, "texts"), text);
 
     textForm.reset();
-
     loadTexts();
-
   } catch (error) {
-
     console.error(error);
-
     alert("Erro ao cadastrar texto.");
   }
 });
 
-/* =========================
-   CARREGAR TEXTOS
-========================= */
-
+/* CARREGAR TEXTOS */
 async function loadTexts() {
-
-  const q = query(
-    collection(db, "texts"),
-    orderBy("createdAt", "desc")
-  );
-
+  const q = query(collection(db, "texts"), orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
 
   textsList.innerHTML = "";
@@ -646,56 +453,34 @@ async function loadTexts() {
   let total = 0;
 
   snapshot.forEach((docItem) => {
-
     const text = docItem.data();
-
     total++;
 
     textsList.innerHTML += `
       <div class="text-item">
+        <strong>${text.title}</strong>
 
-        <strong>
-          ${text.title}
-        </strong>
-
-        <p>
-          ${text.type}
-        </p>
-
-        <p>
-          Status:
-          ${text.status}
-        </p>
-
+        <p>${text.type}</p>
+        <p>Status: ${text.status}</p>
       </div>
     `;
   });
 
+  if (total === 0) {
+    textsList.innerHTML = `
+      <div class="empty-state">
+        Nenhum texto cadastrado ainda.
+      </div>
+    `;
+  }
+
   totalTexts.textContent = total;
 }
 
-/* =========================
-   FUNÇÃO AUXILIAR
-========================= */
-
-/*
-  Extrai campos da ficha colada.
-
-  Exemplo:
-  Nome: Mayke
-
-  Retorna:
-  Mayke
-*/
-
+/* EXTRAIR CAMPO DA FICHA */
 function extractField(text, field) {
-
-  const regex =
-    new RegExp(`${field}:\\s*(.*)`, "i");
-
+  const regex = new RegExp(`${field}:\\s*(.*)`, "i");
   const match = text.match(regex);
 
-  return match
-    ? match[1].trim()
-    : "";
+  return match ? match[1].trim() : "";
 }
