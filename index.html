@@ -15,15 +15,15 @@
         <div class="brand-area">
           <div class="brand-symbol">🌙</div>
           <h1>Central Ascensão Lunar</h1>
-          <p>Painel administrativo para membros, pontos, ranking, atividades e textos.</p>
+          <p>Painel administrativo para gerenciar membros, pontuações, rankings, atividades e textos.</p>
         </div>
 
         <form id="loginForm" class="form">
           <label for="loginEmail">E-mail</label>
-          <input type="email" id="loginEmail" placeholder="Digite seu e-mail" required />
+          <input type="email" id="loginEmail" required />
 
           <label for="loginPassword">Senha</label>
-          <input type="password" id="loginPassword" placeholder="Digite sua senha" required />
+          <input type="password" id="loginPassword" required />
 
           <button type="submit" class="btn btn-primary">Entrar</button>
           <p id="loginMessage" class="message"></p>
@@ -42,13 +42,13 @@
         </div>
 
         <nav class="menu">
-          <button class="menu-btn active" data-page="dashboardPage">🏠 Início</button>
-          <button class="menu-btn" data-page="registerPage">✨ Cadastro</button>
-          <button class="menu-btn" data-page="membersPage">👥 Membros</button>
-          <button class="menu-btn" data-page="pointsPage">⭐ Pontuações</button>
-          <button class="menu-btn" data-page="rankingPage">🏆 Ranking</button>
-          <button class="menu-btn" data-page="activitiesPage">📌 Atividades</button>
-          <button class="menu-btn" data-page="textsPage">📚 Textos</button>
+          <button class="menu-btn active" data-page="dashboardPage" data-title="Início" data-subtitle="Visão geral da Central Ascensão Lunar."><span>☾</span> Início</button>
+          <button class="menu-btn" data-page="membersPage" data-title="Membros" data-subtitle="Cards e controle dos autores cadastrados."><span>👥</span> Membros</button>
+          <button class="menu-btn" data-page="registerMemberPage" data-title="Cadastro de membro" data-subtitle="Cole uma ficha, confira a prévia e salve o card."><span>📝</span> Cadastro</button>
+          <button class="menu-btn" data-page="pointsPage" data-title="Pontuações" data-subtitle="Adicione ou retire pontos dos membros."><span>⭐</span> Pontuações</button>
+          <button class="menu-btn" data-page="rankingPage" data-title="Ranking quinzenal" data-subtitle="Gere rankings por período definido."><span>🏆</span> Ranking</button>
+          <button class="menu-btn" data-page="activitiesPage" data-title="Atividades" data-subtitle="Controle atividades, entregas e vencedores."><span>📌</span> Atividades</button>
+          <button class="menu-btn" data-page="textsPage" data-title="Textos" data-subtitle="Biblioteca de textos enviados pelos membros."><span>📚</span> Textos</button>
         </nav>
 
         <button id="logoutBtn" class="btn btn-secondary logout-btn">Sair</button>
@@ -60,33 +60,15 @@
             <h1 id="pageTitle">Início</h1>
             <p id="pageSubtitle">Visão geral da Central Ascensão Lunar.</p>
           </div>
-
-          <div class="user-pill">
-            <span>Administrador</span>
-          </div>
+          <div class="user-pill">Administrador</div>
         </header>
 
         <section id="dashboardPage" class="page active-page">
           <div class="stats-grid">
-            <article class="stat-card">
-              <span>Total de membros</span>
-              <strong id="totalMembers">0</strong>
-            </article>
-
-            <article class="stat-card">
-              <span>Pontos distribuídos</span>
-              <strong id="totalPoints">0</strong>
-            </article>
-
-            <article class="stat-card">
-              <span>Atividades abertas</span>
-              <strong id="openActivities">0</strong>
-            </article>
-
-            <article class="stat-card">
-              <span>Textos cadastrados</span>
-              <strong id="totalTexts">0</strong>
-            </article>
+            <article class="stat-card"><span>Total de membros</span><strong id="totalMembers">0</strong></article>
+            <article class="stat-card"><span>Pontos distribuídos</span><strong id="totalPoints">0</strong></article>
+            <article class="stat-card"><span>Atividades abertas</span><strong id="openActivities">0</strong></article>
+            <article class="stat-card"><span>Textos cadastrados</span><strong id="totalTexts">0</strong></article>
           </div>
 
           <div class="panel">
@@ -97,76 +79,56 @@
           </div>
         </section>
 
-        <section id="registerPage" class="page">
-          <div class="two-columns">
-            <div class="panel">
-              <h2>Cadastrar membro por ficha</h2>
-              <p class="hint">
-                Cole a ficha do membro. Depois clique em processar para ver o preview antes de salvar.
-              </p>
-
-              <form id="parseMemberForm" class="form">
-                <label for="memberSheet">Ficha do membro</label>
-                <textarea id="memberSheet" rows="16" placeholder="Nome:
-User:
-Obra:
-Gênero:
-Link:
-Wattpad:
-Instagram:
-Idade:
-Status:
-Observações:"></textarea>
-
-                <button type="submit" class="btn btn-primary">Processar ficha</button>
-              </form>
+        <section id="membersPage" class="page">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Cards de membros</h2>
+                <p class="hint">Visualize, edite, pontue ou exclua membros.</p>
+              </div>
+              <span id="membersCount">0 membros</span>
             </div>
 
-            <div class="panel">
-              <h2>Preview do card</h2>
+            <div class="filters-row">
+              <input type="text" id="memberSearch" placeholder="Buscar por nome, user, obra, gênero..." />
+              <select id="memberStatusFilter">
+                <option value="">Todos os status</option>
+                <option value="Novo">Novo</option>
+                <option value="Ativo">Ativo</option>
+                <option value="Em acompanhamento">Em acompanhamento</option>
+                <option value="Inativo">Inativo</option>
+              </select>
+            </div>
 
-              <div id="memberPreview" class="empty-state">
-                O preview aparecerá aqui depois de processar a ficha.
-              </div>
-
-              <button id="savePreviewMemberBtn" class="btn btn-primary full-btn hidden">
-                Salvar membro
-              </button>
+            <div id="membersList" class="cards-grid">
+              <div class="empty-state">Nenhum membro cadastrado ainda.</div>
             </div>
           </div>
         </section>
 
-        <section id="membersPage" class="page">
-          <div class="panel">
-            <div class="panel-header">
-              <h2>Filtros de membros</h2>
-              <span id="membersCount">0 membros</span>
+        <section id="registerMemberPage" class="page">
+          <div class="two-columns wide-left">
+            <div class="panel">
+              <h2>Cadastrar membro por ficha</h2>
+              <p class="hint">Cole a ficha completa. O sistema gera a prévia antes de salvar.</p>
+
+              <form id="memberForm" class="form">
+                <label for="memberSheet">Ficha do membro</label>
+                <textarea id="memberSheet" rows="18" required></textarea>
+
+                <div class="actions-row">
+                  <button type="submit" class="btn btn-primary">Gerar prévia</button>
+                  <button type="button" id="clearPreviewBtn" class="btn btn-secondary">Limpar</button>
+                </div>
+              </form>
             </div>
 
-            <div class="filters-grid">
-              <div class="form">
-                <label for="memberSearch">Buscar</label>
-                <input type="text" id="memberSearch" placeholder="Nome, user, obra ou gênero" />
+            <div class="panel sticky-panel">
+              <h2>Prévia do card</h2>
+              <div id="memberPreview" class="preview-box">
+                <div class="empty-state">A prévia aparecerá aqui.</div>
               </div>
-
-              <div class="form">
-                <label for="memberStatusFilter">Status</label>
-                <select id="memberStatusFilter">
-                  <option value="">Todos</option>
-                  <option value="Ativo">Ativo</option>
-                  <option value="Novo">Novo</option>
-                  <option value="Em acompanhamento">Em acompanhamento</option>
-                  <option value="Inativo">Inativo</option>
-                  <option value="Afastado">Afastado</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="panel">
-            <h2>Cards de membros</h2>
-            <div id="membersList" class="cards-grid">
-              <div class="empty-state">Nenhum membro cadastrado ainda.</div>
+              <button id="savePreviewMemberBtn" class="btn btn-primary full-btn hidden">Salvar membro</button>
             </div>
           </div>
         </section>
@@ -178,25 +140,26 @@ Observações:"></textarea>
 
               <form id="pointsForm" class="form">
                 <label for="pointsMember">Membro</label>
-                <select id="pointsMember" required>
-                  <option value="">Selecione um membro</option>
-                </select>
+                <select id="pointsMember" required></select>
 
-                <label for="pointsValue">Quantidade</label>
-                <input type="number" id="pointsValue" placeholder="100 ou -20" required />
+                <label for="pointsValue">Quantidade de pontos</label>
+                <input type="number" id="pointsValue" required />
 
                 <label for="pointsReason">Motivo</label>
-                <input type="text" id="pointsReason" placeholder="Entregou atividade" required />
+                <input type="text" id="pointsReason" required />
 
                 <label for="pointsDate">Data</label>
                 <input type="date" id="pointsDate" required />
+
+                <label for="pointsResponsible">Responsável</label>
+                <input type="text" id="pointsResponsible" required />
 
                 <button type="submit" class="btn btn-primary">Salvar pontuação</button>
               </form>
             </div>
 
             <div class="panel">
-              <h2>Histórico</h2>
+              <h2>Histórico de pontuação</h2>
               <div id="pointsHistory" class="list">
                 <div class="empty-state">Nenhum ponto lançado ainda.</div>
               </div>
@@ -206,7 +169,7 @@ Observações:"></textarea>
 
         <section id="rankingPage" class="page">
           <div class="panel">
-            <h2>Ranking quinzenal</h2>
+            <h2>Definir período do ranking</h2>
 
             <form id="rankingForm" class="form inline-form">
               <div>
@@ -223,7 +186,12 @@ Observações:"></textarea>
             </form>
           </div>
 
-          <div id="rankingTopThree" class="top-three"></div>
+          <div class="panel">
+            <h2>Top 3 da quinzena</h2>
+            <div id="rankingTopThree" class="top-three">
+              <div class="empty-state">Gere um ranking para ver o pódio.</div>
+            </div>
+          </div>
 
           <div class="panel">
             <h2>Ranking completo</h2>
@@ -263,7 +231,7 @@ Observações:"></textarea>
             </div>
 
             <div class="panel">
-              <h2>Atividades</h2>
+              <h2>Atividades cadastradas</h2>
               <div id="activitiesList" class="list">
                 <div class="empty-state">Nenhuma atividade cadastrada ainda.</div>
               </div>
@@ -272,20 +240,18 @@ Observações:"></textarea>
         </section>
 
         <section id="textsPage" class="page">
-          <div class="two-columns">
+          <div class="library-layout">
             <div class="panel">
               <h2>Cadastrar texto</h2>
 
               <form id="textForm" class="form">
-                <label for="textMember">Autor</label>
-                <select id="textMember" required>
-                  <option value="">Selecione um membro</option>
-                </select>
+                <label for="textMember">Autor/membro</label>
+                <select id="textMember" required></select>
 
-                <label for="textTitle">Título</label>
+                <label for="textTitle">Título do texto/obra</label>
                 <input type="text" id="textTitle" required />
 
-                <label for="textType">Tipo</label>
+                <label for="textType">Tipo de texto</label>
                 <select id="textType">
                   <option value="Sinopse">Sinopse</option>
                   <option value="Prólogo">Prólogo</option>
@@ -295,7 +261,7 @@ Observações:"></textarea>
                   <option value="Outro">Outro</option>
                 </select>
 
-                <label for="textContent">Texto, link ou observação</label>
+                <label for="textContent">Texto ou observação</label>
                 <textarea id="textContent" rows="8"></textarea>
 
                 <label for="textStatus">Status</label>
@@ -312,17 +278,17 @@ Observações:"></textarea>
             </div>
 
             <div class="panel">
-              <h2>Biblioteca de textos</h2>
+              <h2>Biblioteca</h2>
               <div id="textsList" class="list">
                 <div class="empty-state">Nenhum texto cadastrado ainda.</div>
               </div>
             </div>
-          </div>
 
-          <div class="panel">
-            <h2>Visualização</h2>
-            <div id="textViewer" class="text-viewer empty-state">
-              Selecione um texto para visualizar.
+            <div class="panel text-viewer">
+              <h2>Visualização</h2>
+              <div id="textViewer">
+                <div class="empty-state">Selecione um texto para visualizar.</div>
+              </div>
             </div>
           </div>
         </section>
