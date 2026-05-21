@@ -76,6 +76,7 @@ loginForm.addEventListener("submit", async (event) => {
       document.getElementById("loginEmail").value,
       document.getElementById("loginPassword").value
     );
+
     loginMessage.textContent = "";
   } catch (error) {
     console.error(error);
@@ -119,27 +120,33 @@ memberForm.addEventListener("submit", (event) => {
   }
 
   pendingMember = parseMemberSheet(rawText);
-  memberPreview.innerHTML = createMemberCardHTML(pendingMember, true);
+  memberPreview.innerHTML = createParsedMemberFormHTML(pendingMember);
   savePreviewMemberBtn.classList.remove("hidden");
 });
 
 savePreviewMemberBtn.addEventListener("click", async () => {
   if (!pendingMember) {
-    alert("Gere uma prévia antes.");
+    alert("Reconheça uma ficha antes de salvar.");
     return;
   }
 
+  const memberData = getMemberDataFromParsedFields();
+
   try {
     if (editingMemberId) {
+      const oldMember = allMembers.find((member) => member.id === editingMemberId);
+
       await updateDoc(doc(db, "members", editingMemberId), {
-        ...pendingMember,
+        ...memberData,
+        points: Number(oldMember?.points || 0),
         rawSheet: memberSheet.value.trim()
       });
+
       editingMemberId = null;
       savePreviewMemberBtn.textContent = "Salvar membro";
     } else {
       await addDoc(collection(db, "members"), {
-        ...pendingMember,
+        ...memberData,
         points: 0,
         rawSheet: memberSheet.value.trim(),
         createdAt: Timestamp.now()
@@ -149,6 +156,7 @@ savePreviewMemberBtn.addEventListener("click", async () => {
     memberForm.reset();
     resetPreview();
     await loadMembers();
+
     showPage("membersPage", "Membros", "Cards e controle dos autores cadastrados.");
   } catch (error) {
     console.error(error);
@@ -187,11 +195,11 @@ membersList.addEventListener("click", async (event) => {
   if (action === "edit") {
     editingMemberId = memberId;
     memberSheet.value = member.rawSheet || formatMemberDetails(member);
-    pendingMember = parseMemberSheet(memberSheet.value);
-    memberPreview.innerHTML = createMemberCardHTML({ ...member, ...pendingMember }, true);
+    pendingMember = normalizeOldMember(member);
+    memberPreview.innerHTML = createParsedMemberFormHTML(pendingMember);
     savePreviewMemberBtn.textContent = "Salvar alterações";
     savePreviewMemberBtn.classList.remove("hidden");
-    showPage("registerMemberPage", "Editar membro", "Altere a ficha e salve as mudanças.");
+    showPage("registerMemberPage", "Editar membro", "Altere os campos e salve as mudanças.");
   }
 
   if (action === "delete") {
@@ -217,7 +225,7 @@ pointsForm.addEventListener("submit", async (event) => {
   const point = {
     memberId,
     memberName: selectedMember.name,
-    memberUser: selectedMember.user || "",
+    memberUser: selectedMember.wattpad || selectedMember.user || "",
     value,
     reason: document.getElementById("pointsReason").value,
     date: document.getElementById("pointsDate").value,
@@ -226,6 +234,7 @@ pointsForm.addEventListener("submit", async (event) => {
   };
 
   await addDoc(collection(db, "points"), point);
+
   await updateDoc(doc(db, "members", memberId), {
     points: Number(selectedMember.points || 0) + value
   });
@@ -258,8 +267,8 @@ rankingForm.addEventListener("submit", async (event) => {
 
       return {
         name: member?.name || "Membro",
-        user: member?.user || "",
-        work: member?.work || "",
+        user: member?.wattpad || member?.user || "",
+        work: member?.completedWork || "",
         points
       };
     })
@@ -308,11 +317,8 @@ activitiesList.addEventListener("click", async (event) => {
   if (action === "toggle-delivery") {
     const deliveredBy = [...(activity.deliveredBy || [])];
 
-    if (deliveredBy.includes(memberId)) {
-      deliveredBy.splice(deliveredBy.indexOf(memberId), 1);
-    } else {
-      deliveredBy.push(memberId);
-    }
+    if (deliveredBy.includes(memberId)) deliveredBy.splice(deliveredBy.indexOf(memberId), 1);
+    else deliveredBy.push(memberId);
 
     await updateDoc(doc(db, "activities", activityId), { deliveredBy });
     await loadActivities();
@@ -321,11 +327,8 @@ activitiesList.addEventListener("click", async (event) => {
   if (action === "toggle-winner") {
     const winners = [...(activity.winners || [])];
 
-    if (winners.includes(memberId)) {
-      winners.splice(winners.indexOf(memberId), 1);
-    } else {
-      winners.push(memberId);
-    }
+    if (winners.includes(memberId)) winners.splice(winners.indexOf(memberId), 1);
+    else winners.push(memberId);
 
     await updateDoc(doc(db, "activities", activityId), { winners });
     await loadActivities();
@@ -438,7 +441,16 @@ function renderMembers() {
   const statusFilter = memberStatusFilter.value;
 
   const filteredMembers = allMembers.filter((member) => {
-    const searchableText = `${member.name} ${member.user} ${member.work} ${member.genre} ${member.status}`.toLowerCase();
+    const searchableText = `
+      ${member.name || ""}
+      ${member.wattpad || ""}
+      ${member.phone || ""}
+      ${member.age || ""}
+      ${member.writingGenre || ""}
+      ${member.completedWork || ""}
+      ${member.status || ""}
+    `.toLowerCase();
+
     return searchableText.includes(searchTerm) && (!statusFilter || member.status === statusFilter);
   });
 
@@ -524,34 +536,105 @@ async function loadTexts() {
 
 function parseMemberSheet(text) {
   return {
-    name: getField(text, ["Nome", "Nome completo", "Autor", "Membro"]) || "Sem nome",
-    user: getField(text, ["User", "Usuário", "Usuario", "Nickname", "Apelido"]) || "Sem user",
-    wattpad: getField(text, ["Wattpad", "User Wattpad", "Usuário Wattpad"]) || "",
-    instagram: getField(text, ["Instagram", "Insta", "Perfil"]) || "",
-    work: getField(text, ["Obra", "Obra principal", "Título", "Titulo", "Livro"]) || "Não informado",
-    genre: getField(text, ["Gênero", "Genero", "Categoria", "Estilo"]) || "Não informado",
-    link: getField(text, ["Link", "Link da obra", "URL"]) || "",
-    status: getField(text, ["Status", "Situação", "Situacao"]) || "Novo",
-    age: getField(text, ["Idade"]) || "",
-    objective: getField(text, ["Objetivo", "Meta", "Objetivos"]) || "",
-    difficulty: getField(text, ["Dificuldade", "Dificuldades", "Problema", "Insegurança", "Inseguranca"]) || "",
-    observations: getField(text, ["Observações", "Observacoes", "Observação", "Observacao", "Notas"]) || ""
+    name: getValueAfterLabel(text, ["Nome"]),
+    wattpad: getValueAfterLabel(text, ["User do Wattpad", "Wattpad"]),
+    age: getValueAfterLabel(text, ["Idade"]),
+    writingGenre: getValueAfterLabel(text, ["Gênero que mais escreve", "Genero que mais escreve"]),
+    hasCompletedWork: getValueAfterQuestion(text, ["Tem alguma obra concluída?", "Tem alguma obra concluida?"]),
+    completedWork: getValueAfterQuestion(text, ["Se sim, qual?"]),
+    doubts: getValueAfterQuestion(text, ["Tem alguma dúvida, insegurança ou algo que gostaria de falar antes de entrar oficialmente no projeto?", "Tem alguma duvida, inseguranca ou algo que gostaria de falar antes de entrar oficialmente no projeto?"]),
+    phone: "",
+    status: "Novo"
   };
 }
 
-function getField(text, possibleNames) {
-  const lines = text.split(/\r?\n/);
+function createParsedMemberFormHTML(member) {
+  return `
+    <div class="parsed-box">
+      <h3>Conferir antes de salvar</h3>
 
-  for (const name of possibleNames) {
-    const regex = new RegExp(`^\\s*${escapeRegExp(name)}\\s*:\\s*(.+)\\s*$`, "i");
+      <div class="parsed-form">
+        <label for="parsedName">Nome</label>
+        <input id="parsedName" type="text" value="${escapeAttribute(member.name)}" />
 
-    for (const line of lines) {
-      const match = line.match(regex);
-      if (match) return match[1].trim();
-    }
-  }
+        <label for="parsedWattpad">User do Wattpad</label>
+        <input id="parsedWattpad" type="text" value="${escapeAttribute(member.wattpad)}" />
 
-  return "";
+        <label for="parsedPhone">Telefone</label>
+        <input id="parsedPhone" type="text" value="${escapeAttribute(member.phone)}" placeholder="Adicione manualmente" />
+
+        <label for="parsedAge">Idade</label>
+        <input id="parsedAge" type="text" value="${escapeAttribute(member.age)}" />
+
+        <label for="parsedWritingGenre">Gênero que mais escreve</label>
+        <input id="parsedWritingGenre" type="text" value="${escapeAttribute(member.writingGenre)}" />
+
+        <label for="parsedHasCompletedWork">Tem obra concluída?</label>
+        <input id="parsedHasCompletedWork" type="text" value="${escapeAttribute(member.hasCompletedWork)}" />
+
+        <label for="parsedCompletedWork">Qual obra concluída?</label>
+        <input id="parsedCompletedWork" type="text" value="${escapeAttribute(member.completedWork)}" />
+
+        <label for="parsedDoubts">Dúvida, insegurança ou observação inicial</label>
+        <textarea id="parsedDoubts" rows="4">${escapeHTML(member.doubts)}</textarea>
+
+        <label for="parsedStatus">Status</label>
+        <select id="parsedStatus">
+          <option value="Novo" ${member.status === "Novo" ? "selected" : ""}>Novo</option>
+          <option value="Ativo" ${member.status === "Ativo" ? "selected" : ""}>Ativo</option>
+          <option value="Em acompanhamento" ${member.status === "Em acompanhamento" ? "selected" : ""}>Em acompanhamento</option>
+          <option value="Inativo" ${member.status === "Inativo" ? "selected" : ""}>Inativo</option>
+        </select>
+      </div>
+
+      <p class="parsed-note">
+        Revise os campos acima. O telefone não vem na ficha, então fica para você preencher manualmente.
+      </p>
+    </div>
+  `;
+}
+
+function getMemberDataFromParsedFields() {
+  const name = document.getElementById("parsedName").value.trim();
+  const wattpad = document.getElementById("parsedWattpad").value.trim();
+  const phone = document.getElementById("parsedPhone").value.trim();
+  const age = document.getElementById("parsedAge").value.trim();
+  const writingGenre = document.getElementById("parsedWritingGenre").value.trim();
+  const hasCompletedWork = document.getElementById("parsedHasCompletedWork").value.trim();
+  const completedWork = document.getElementById("parsedCompletedWork").value.trim();
+  const doubts = document.getElementById("parsedDoubts").value.trim();
+  const status = document.getElementById("parsedStatus").value;
+
+  return {
+    name,
+    wattpad,
+    phone,
+    age,
+    writingGenre,
+    hasCompletedWork,
+    completedWork,
+    doubts,
+    status,
+
+    user: wattpad,
+    genre: writingGenre,
+    work: completedWork || "Não informado",
+    observations: doubts
+  };
+}
+
+function normalizeOldMember(member) {
+  return {
+    name: member.name || "",
+    wattpad: member.wattpad || member.user || "",
+    phone: member.phone || "",
+    age: member.age || "",
+    writingGenre: member.writingGenre || member.genre || "",
+    hasCompletedWork: member.hasCompletedWork || "",
+    completedWork: member.completedWork || member.work || "",
+    doubts: member.doubts || member.observations || "",
+    status: member.status || "Novo"
+  };
 }
 
 function createMemberCardHTML(member, isPreview) {
@@ -559,26 +642,27 @@ function createMemberCardHTML(member, isPreview) {
     <article class="member-card">
       <div class="member-top">
         <div>
-          <h3>${escapeHTML(member.name)}</h3>
-          <p>${escapeHTML(member.user)}</p>
+          <h3>${escapeHTML(member.name || "Sem nome")}</h3>
+          <p>${escapeHTML(member.wattpad || member.user || "Sem Wattpad")}</p>
         </div>
-        <div class="member-points">${Number(member.points || 0)}<span>pontos</span></div>
+
+        <div class="member-points">
+          ${Number(member.points || 0)}
+          <span>pontos</span>
+        </div>
       </div>
 
       <div class="badges-row">
         <span class="badge">${escapeHTML(member.status || "Novo")}</span>
-        <span class="badge">${escapeHTML(member.genre || "Sem gênero")}</span>
+        <span class="badge">${escapeHTML(member.writingGenre || member.genre || "Sem gênero")}</span>
       </div>
 
       <div class="member-meta">
-        <div><strong>Obra:</strong> ${escapeHTML(member.work || "Não informado")}</div>
-        ${member.wattpad ? `<div><strong>Wattpad:</strong> ${escapeHTML(member.wattpad)}</div>` : ""}
-        ${member.instagram ? `<div><strong>Instagram:</strong> ${escapeHTML(member.instagram)}</div>` : ""}
-        ${member.age ? `<div><strong>Idade:</strong> ${escapeHTML(member.age)}</div>` : ""}
-        ${member.link ? `<div><strong>Link:</strong> ${escapeHTML(member.link)}</div>` : ""}
-        ${member.objective ? `<div><strong>Objetivo:</strong> ${escapeHTML(member.objective)}</div>` : ""}
-        ${member.difficulty ? `<div><strong>Dificuldade:</strong> ${escapeHTML(member.difficulty)}</div>` : ""}
-        ${member.observations ? `<div><strong>Observações:</strong> ${escapeHTML(member.observations)}</div>` : ""}
+        <div><strong>Telefone:</strong> ${escapeHTML(member.phone || "Não informado")}</div>
+        <div><strong>Idade:</strong> ${escapeHTML(member.age || "Não informada")}</div>
+        <div><strong>Obra concluída?</strong> ${escapeHTML(member.hasCompletedWork || "Não informado")}</div>
+        <div><strong>Qual obra:</strong> ${escapeHTML(member.completedWork || "Não informado")}</div>
+        <div><strong>Dúvida/Insegurança:</strong> ${escapeHTML(member.doubts || "Nenhuma")}</div>
       </div>
 
       ${
@@ -725,6 +809,51 @@ function renderRanking(finalRanking) {
   });
 }
 
+function getValueAfterLabel(text, labels) {
+  const lines = text.split(/\r?\n/);
+
+  for (const label of labels) {
+    for (const line of lines) {
+      const cleaned = cleanLine(line);
+      const escapedLabel = escapeRegExp(label);
+
+      const regex = new RegExp(`${escapedLabel}\\s*:?\\s*(.+)$`, "i");
+      const match = cleaned.match(regex);
+
+      if (match) return match[1].trim();
+    }
+  }
+
+  return "";
+}
+
+function getValueAfterQuestion(text, labels) {
+  const lines = text.split(/\r?\n/);
+
+  for (const label of labels) {
+    for (const line of lines) {
+      const cleaned = cleanLine(line);
+      const escapedLabel = escapeRegExp(label);
+
+      const regex = new RegExp(`${escapedLabel}\\s*:?\\s*(.*)$`, "i");
+      const match = cleaned.match(regex);
+
+      if (match && match[1].trim()) return match[1].trim();
+    }
+  }
+
+  return "";
+}
+
+function cleanLine(line) {
+  return String(line)
+    .replace(/[🌙✨🖋️📚🎂📝📖💭]/g, "")
+    .replace(/\*/g, "")
+    .replace(/_/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function showPage(pageId, title, subtitle) {
   pages.forEach((page) => page.classList.remove("active-page"));
   document.getElementById(pageId).classList.add("active-page");
@@ -739,25 +868,22 @@ function showPage(pageId, title, subtitle) {
 
 function resetPreview() {
   pendingMember = null;
-  memberPreview.innerHTML = `<div class="empty-state">A prévia aparecerá aqui.</div>`;
+  memberPreview.innerHTML = `<div class="empty-state">Os campos reconhecidos aparecerão aqui. Você poderá corrigir antes de salvar.</div>`;
   savePreviewMemberBtn.classList.add("hidden");
 }
 
 function formatMemberDetails(member) {
   return `
 Nome: ${member.name || ""}
-User: ${member.user || ""}
-Wattpad: ${member.wattpad || ""}
-Instagram: ${member.instagram || ""}
-Obra: ${member.work || ""}
-Gênero: ${member.genre || ""}
+User do Wattpad: ${member.wattpad || member.user || ""}
+Telefone: ${member.phone || ""}
+Idade: ${member.age || ""}
+Gênero que mais escreve: ${member.writingGenre || ""}
+Tem obra concluída?: ${member.hasCompletedWork || ""}
+Se sim, qual?: ${member.completedWork || ""}
+Dúvida/Insegurança: ${member.doubts || ""}
 Status: ${member.status || ""}
 Pontos: ${member.points || 0}
-Idade: ${member.age || ""}
-Link: ${member.link || ""}
-Objetivo: ${member.objective || ""}
-Dificuldade: ${member.difficulty || ""}
-Observações: ${member.observations || ""}
   `.trim();
 }
 
@@ -768,6 +894,10 @@ function escapeHTML(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function escapeAttribute(value) {
+  return escapeHTML(value).replaceAll("\n", " ");
 }
 
 function escapeRegExp(value) {

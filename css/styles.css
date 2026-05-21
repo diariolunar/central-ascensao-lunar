@@ -234,7 +234,7 @@ body {
 }
 
 .wide-left {
-  grid-template-columns: minmax(0, 1fr) 430px;
+  grid-template-columns: minmax(0, 1fr) 460px;
 }
 
 .library-layout {
@@ -279,13 +279,15 @@ body {
   font-size: 34px;
 }
 
-.form {
+.form,
+.parsed-form {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.form label {
+.form label,
+.parsed-form label {
   color: var(--text-soft);
   font-size: 14px;
 }
@@ -389,6 +391,10 @@ select:focus {
   text-align: center;
 }
 
+.preview-box {
+  min-height: 260px;
+}
+
 .list {
   display: flex;
   flex-direction: column;
@@ -405,7 +411,8 @@ select:focus {
 .history-item,
 .activity-item,
 .text-item,
-.podium-card {
+.podium-card,
+.parsed-box {
   padding: 18px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -571,6 +578,50 @@ select:focus {
   background: var(--bg-input);
 }
 
+.activity-checklist {
+  margin-top: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.activity-member-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-input);
+}
+
+.activity-member-row span {
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
+.parsed-box {
+  margin-bottom: 14px;
+}
+
+.parsed-box h3 {
+  color: var(--gold-light);
+  margin-bottom: 12px;
+}
+
+.parsed-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.parsed-note {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 12px;
+}
+
 @media (max-width: 1200px) {
   .library-layout {
     grid-template-columns: 1fr;
@@ -630,7 +681,8 @@ select:focus {
   .top-three,
   .filters-row,
   .inline-form,
-  .ranking-item {
+  .ranking-item,
+  .activity-member-row {
     grid-template-columns: 1fr;
   }
 }

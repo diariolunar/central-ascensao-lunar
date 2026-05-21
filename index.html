@@ -9,7 +9,6 @@
 
 <body>
   <div class="app">
-
     <section id="loginScreen" class="login-screen">
       <div class="login-card">
         <div class="brand-area">
@@ -44,7 +43,7 @@
         <nav class="menu">
           <button class="menu-btn active" data-page="dashboardPage" data-title="Início" data-subtitle="Visão geral da Central Ascensão Lunar."><span>☾</span> Início</button>
           <button class="menu-btn" data-page="membersPage" data-title="Membros" data-subtitle="Cards e controle dos autores cadastrados."><span>👥</span> Membros</button>
-          <button class="menu-btn" data-page="registerMemberPage" data-title="Cadastro de membro" data-subtitle="Cole uma ficha, confira a prévia e salve o card."><span>📝</span> Cadastro</button>
+          <button class="menu-btn" data-page="registerMemberPage" data-title="Cadastro de membro" data-subtitle="Cole a ficha de entrada, confira os campos reconhecidos e salve o membro."><span>📝</span> Cadastro</button>
           <button class="menu-btn" data-page="pointsPage" data-title="Pontuações" data-subtitle="Adicione ou retire pontos dos membros."><span>⭐</span> Pontuações</button>
           <button class="menu-btn" data-page="rankingPage" data-title="Ranking quinzenal" data-subtitle="Gere rankings por período definido."><span>🏆</span> Ranking</button>
           <button class="menu-btn" data-page="activitiesPage" data-title="Atividades" data-subtitle="Controle atividades, entregas e vencedores."><span>📌</span> Atividades</button>
@@ -90,7 +89,7 @@
             </div>
 
             <div class="filters-row">
-              <input type="text" id="memberSearch" placeholder="Buscar por nome, user, obra, gênero..." />
+              <input type="text" id="memberSearch" placeholder="Buscar por nome, user, telefone, gênero..." />
               <select id="memberStatusFilter">
                 <option value="">Todos os status</option>
                 <option value="Novo">Novo</option>
@@ -110,24 +109,26 @@
           <div class="two-columns wide-left">
             <div class="panel">
               <h2>Cadastrar membro por ficha</h2>
-              <p class="hint">Cole a ficha completa. O sistema gera a prévia antes de salvar.</p>
+              <p class="hint">Cole a ficha de entrada exatamente como o membro enviou. Depois clique em reconhecer ficha.</p>
 
               <form id="memberForm" class="form">
-                <label for="memberSheet">Ficha do membro</label>
-                <textarea id="memberSheet" rows="18" required></textarea>
+                <label for="memberSheet">Ficha de entrada</label>
+                <textarea id="memberSheet" rows="18" required placeholder="Cole aqui a ficha preenchida pelo membro..."></textarea>
 
                 <div class="actions-row">
-                  <button type="submit" class="btn btn-primary">Gerar prévia</button>
+                  <button type="submit" class="btn btn-primary">Reconhecer ficha</button>
                   <button type="button" id="clearPreviewBtn" class="btn btn-secondary">Limpar</button>
                 </div>
               </form>
             </div>
 
             <div class="panel sticky-panel">
-              <h2>Prévia do card</h2>
+              <h2>Campos reconhecidos</h2>
+
               <div id="memberPreview" class="preview-box">
-                <div class="empty-state">A prévia aparecerá aqui.</div>
+                <div class="empty-state">Os campos reconhecidos aparecerão aqui. Você poderá corrigir antes de salvar.</div>
               </div>
+
               <button id="savePreviewMemberBtn" class="btn btn-primary full-btn hidden">Salvar membro</button>
             </div>
           </div>
