@@ -3,18 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Central Ascensão Lunar</title>
+
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 
 <body>
   <div class="app">
+
+    <!-- LOGIN -->
     <section id="loginScreen" class="login-screen">
       <div class="login-card">
         <div class="brand-area">
           <div class="brand-symbol">🌙</div>
           <h1>Central Ascensão Lunar</h1>
-          <p>Painel administrativo para gerenciar membros, pontuações, rankings, atividades e textos.</p>
+          <p>
+            Painel administrativo para gerenciar membros, pontuações,
+            rankings, atividades, textos e backups do Ascensão Lunar.
+          </p>
         </div>
 
         <form id="loginForm" class="form">
@@ -25,15 +32,20 @@
           <input type="password" id="loginPassword" required />
 
           <button type="submit" class="btn btn-primary">Entrar</button>
+
           <p id="loginMessage" class="message"></p>
         </form>
       </div>
     </section>
 
+    <!-- APP PRINCIPAL -->
     <section id="mainApp" class="main-app hidden">
+
+      <!-- MENU LATERAL -->
       <aside class="sidebar">
         <div class="sidebar-header">
           <div class="sidebar-logo">🌙</div>
+
           <div>
             <h2>Ascensão</h2>
             <span>Central Lunar</span>
@@ -41,55 +53,124 @@
         </div>
 
         <nav class="menu">
-          <button class="menu-btn active" data-page="dashboardPage" data-title="Início" data-subtitle="Visão geral da Central Ascensão Lunar."><span>☾</span> Início</button>
-          <button class="menu-btn" data-page="membersPage" data-title="Membros" data-subtitle="Cards e controle dos autores cadastrados."><span>👥</span> Membros</button>
-          <button class="menu-btn" data-page="registerMemberPage" data-title="Cadastro de membro" data-subtitle="Cole a ficha de entrada, confira os campos reconhecidos e salve o membro."><span>📝</span> Cadastro</button>
-          <button class="menu-btn" data-page="pointsPage" data-title="Pontuações" data-subtitle="Adicione ou retire pontos dos membros."><span>⭐</span> Pontuações</button>
-          <button class="menu-btn" data-page="rankingPage" data-title="Ranking quinzenal" data-subtitle="Gere rankings por período definido."><span>🏆</span> Ranking</button>
-          <button class="menu-btn" data-page="activitiesPage" data-title="Atividades" data-subtitle="Controle atividades, entregas e vencedores."><span>📌</span> Atividades</button>
-          <button class="menu-btn" data-page="textsPage" data-title="Textos" data-subtitle="Biblioteca de textos enviados pelos membros."><span>📚</span> Textos</button>
+          <button class="menu-btn active" data-page="dashboardPage" data-title="Início" data-subtitle="Visão geral da Central Ascensão Lunar.">
+            <span>☾</span> Início
+          </button>
+
+          <button class="menu-btn" data-page="membersPage" data-title="Membros" data-subtitle="Cards e controle dos autores cadastrados.">
+            <span>👥</span> Membros
+          </button>
+
+          <button class="menu-btn" data-page="registerMemberPage" data-title="Cadastro de membro" data-subtitle="Cole a ficha de entrada, confira os campos reconhecidos e salve o membro.">
+            <span>📝</span> Cadastro
+          </button>
+
+          <button class="menu-btn" data-page="pointsPage" data-title="Pontuações" data-subtitle="Adicione ou retire pontos dos membros.">
+            <span>⭐</span> Pontuações
+          </button>
+
+          <button class="menu-btn" data-page="rankingPage" data-title="Rankings" data-subtitle="Ranking quinzenal e ranking geral acumulado.">
+            <span>🏆</span> Rankings
+          </button>
+
+          <button class="menu-btn" data-page="activitiesPage" data-title="Atividades" data-subtitle="Controle atividades, entregas, vencedores e pontuação automática.">
+            <span>📌</span> Atividades
+          </button>
+
+          <button class="menu-btn" data-page="textsPage" data-title="Textos" data-subtitle="Biblioteca de textos enviados pelos membros.">
+            <span>📚</span> Textos
+          </button>
+
+          <button class="menu-btn" data-page="settingsPage" data-title="Configurações" data-subtitle="Tipos de pontuação, responsáveis, status e backups.">
+            <span>⚙️</span> Configurações
+          </button>
         </nav>
 
         <button id="logoutBtn" class="btn btn-secondary logout-btn">Sair</button>
       </aside>
 
+      <!-- CONTEÚDO -->
       <main class="content">
         <header class="topbar">
           <div>
             <h1 id="pageTitle">Início</h1>
             <p id="pageSubtitle">Visão geral da Central Ascensão Lunar.</p>
           </div>
+
           <div class="user-pill">Administrador</div>
         </header>
 
+        <!-- DASHBOARD -->
         <section id="dashboardPage" class="page active-page">
           <div class="stats-grid">
-            <article class="stat-card"><span>Total de membros</span><strong id="totalMembers">0</strong></article>
-            <article class="stat-card"><span>Pontos distribuídos</span><strong id="totalPoints">0</strong></article>
-            <article class="stat-card"><span>Atividades abertas</span><strong id="openActivities">0</strong></article>
-            <article class="stat-card"><span>Textos cadastrados</span><strong id="totalTexts">0</strong></article>
+            <article class="stat-card">
+              <span>Total de membros</span>
+              <strong id="totalMembers">0</strong>
+            </article>
+
+            <article class="stat-card">
+              <span>Pontos distribuídos</span>
+              <strong id="totalPoints">0</strong>
+            </article>
+
+            <article class="stat-card">
+              <span>Atividades abertas</span>
+              <strong id="openActivities">0</strong>
+            </article>
+
+            <article class="stat-card">
+              <span>Textos cadastrados</span>
+              <strong id="totalTexts">0</strong>
+            </article>
           </div>
 
-          <div class="panel">
-            <h2>Últimas movimentações</h2>
-            <div id="latestMovements" class="list">
-              <div class="empty-state">Nenhuma movimentação registrada ainda.</div>
+          <div class="dashboard-grid">
+            <div class="panel">
+              <h2>Últimas movimentações</h2>
+
+              <div id="latestMovements" class="list">
+                <div class="empty-state">Nenhuma movimentação registrada ainda.</div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h2>Resumo rápido</h2>
+
+              <div id="quickSummary" class="summary-list">
+                <div class="summary-item">
+                  <span>Ranking geral</span>
+                  <strong id="dashboardTopMember">Sem dados</strong>
+                </div>
+
+                <div class="summary-item">
+                  <span>Atividades pendentes</span>
+                  <strong id="dashboardPendingActivities">0</strong>
+                </div>
+
+                <div class="summary-item">
+                  <span>Textos pendentes</span>
+                  <strong id="dashboardPendingTexts">0</strong>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
+        <!-- MEMBROS -->
         <section id="membersPage" class="page">
           <div class="panel">
             <div class="panel-header">
               <div>
                 <h2>Cards de membros</h2>
-                <p class="hint">Visualize, edite, pontue ou exclua membros.</p>
+                <p class="hint">Visualize, edite, pontue, abra o perfil ou exclua membros.</p>
               </div>
+
               <span id="membersCount">0 membros</span>
             </div>
 
             <div class="filters-row">
-              <input type="text" id="memberSearch" placeholder="Buscar por nome, user, telefone, gênero..." />
+              <input type="text" id="memberSearch" placeholder="Buscar por nome, Wattpad, telefone, gênero..." />
+
               <select id="memberStatusFilter">
                 <option value="">Todos os status</option>
                 <option value="Novo">Novo</option>
@@ -105,15 +186,26 @@
           </div>
         </section>
 
+        <!-- CADASTRO / EDIÇÃO DE MEMBRO -->
         <section id="registerMemberPage" class="page">
           <div class="two-columns wide-left">
             <div class="panel">
               <h2>Cadastrar membro por ficha</h2>
-              <p class="hint">Cole a ficha de entrada exatamente como o membro enviou. Depois clique em reconhecer ficha.</p>
+
+              <p class="hint">
+                Cole a ficha de entrada exatamente como o membro enviou.
+                Depois clique em reconhecer ficha.
+              </p>
 
               <form id="memberForm" class="form">
                 <label for="memberSheet">Ficha de entrada</label>
-                <textarea id="memberSheet" rows="18" required placeholder="Cole aqui a ficha preenchida pelo membro..."></textarea>
+
+                <textarea
+                  id="memberSheet"
+                  rows="18"
+                  required
+                  placeholder="Cole aqui a ficha preenchida pelo membro..."
+                ></textarea>
 
                 <div class="actions-row">
                   <button type="submit" class="btn btn-primary">Reconhecer ficha</button>
@@ -126,14 +218,46 @@
               <h2>Campos reconhecidos</h2>
 
               <div id="memberPreview" class="preview-box">
-                <div class="empty-state">Os campos reconhecidos aparecerão aqui. Você poderá corrigir antes de salvar.</div>
+                <div class="empty-state">
+                  Os campos reconhecidos aparecerão aqui.
+                  Você poderá corrigir antes de salvar.
+                </div>
               </div>
 
-              <button id="savePreviewMemberBtn" class="btn btn-primary full-btn hidden">Salvar membro</button>
+              <button id="savePreviewMemberBtn" class="btn btn-primary full-btn hidden">
+                Salvar membro
+              </button>
             </div>
           </div>
         </section>
 
+        <!-- PERFIL DO MEMBRO -->
+        <section id="memberProfilePage" class="page">
+          <div class="profile-layout">
+            <div class="panel">
+              <h2>Perfil do membro</h2>
+
+              <div id="memberProfileContent">
+                <div class="empty-state">Selecione um membro para visualizar o perfil.</div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h2>Observações internas</h2>
+
+              <form id="internalNotesForm" class="form">
+                <input type="hidden" id="internalNotesMemberId" />
+
+                <label for="internalNotesText">Anotações</label>
+                <textarea id="internalNotesText" rows="10" placeholder="Anote evolução, dificuldades, comportamento, pendências..."></textarea>
+
+                <button type="submit" class="btn btn-primary">Salvar observações</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- PONTUAÇÕES -->
         <section id="pointsPage" class="page">
           <div class="two-columns">
             <div class="panel">
@@ -142,6 +266,11 @@
               <form id="pointsForm" class="form">
                 <label for="pointsMember">Membro</label>
                 <select id="pointsMember" required></select>
+
+                <label for="pointsType">Tipo de pontuação</label>
+                <select id="pointsType">
+                  <option value="">Selecionar tipo manualmente</option>
+                </select>
 
                 <label for="pointsValue">Quantidade de pontos</label>
                 <input type="number" id="pointsValue" required />
@@ -161,6 +290,7 @@
 
             <div class="panel">
               <h2>Histórico de pontuação</h2>
+
               <div id="pointsHistory" class="list">
                 <div class="empty-state">Nenhum ponto lançado ainda.</div>
               </div>
@@ -168,9 +298,10 @@
           </div>
         </section>
 
+        <!-- RANKINGS -->
         <section id="rankingPage" class="page">
           <div class="panel">
-            <h2>Definir período do ranking</h2>
+            <h2>Definir período do ranking quinzenal</h2>
 
             <form id="rankingForm" class="form inline-form">
               <div>
@@ -189,19 +320,39 @@
 
           <div class="panel">
             <h2>Top 3 da quinzena</h2>
+
             <div id="rankingTopThree" class="top-three">
               <div class="empty-state">Gere um ranking para ver o pódio.</div>
             </div>
           </div>
 
           <div class="panel">
-            <h2>Ranking completo</h2>
+            <h2>Ranking quinzenal completo</h2>
+
             <div id="rankingList" class="ranking-list">
               <div class="empty-state">Escolha um período para gerar o ranking.</div>
             </div>
           </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Ranking geral acumulado</h2>
+                <p class="hint">Ranking considerando todos os pontos salvos em cada membro.</p>
+              </div>
+
+              <button id="generateGeneralRankingBtn" class="btn btn-primary">
+                Atualizar ranking geral
+              </button>
+            </div>
+
+            <div id="generalRankingList" class="ranking-list">
+              <div class="empty-state">Clique para gerar o ranking geral.</div>
+            </div>
+          </div>
         </section>
 
+        <!-- ATIVIDADES -->
         <section id="activitiesPage" class="page">
           <div class="two-columns">
             <div class="panel">
@@ -217,8 +368,11 @@
                 <label for="activityDeadline">Prazo</label>
                 <input type="date" id="activityDeadline" />
 
-                <label for="activityPoints">Pontos</label>
+                <label for="activityPoints">Pontos por entrega</label>
                 <input type="number" id="activityPoints" />
+
+                <label for="activityWinnerPoints">Pontos extras para vencedor</label>
+                <input type="number" id="activityWinnerPoints" />
 
                 <label for="activityStatus">Status</label>
                 <select id="activityStatus">
@@ -233,6 +387,7 @@
 
             <div class="panel">
               <h2>Atividades cadastradas</h2>
+
               <div id="activitiesList" class="list">
                 <div class="empty-state">Nenhuma atividade cadastrada ainda.</div>
               </div>
@@ -240,6 +395,7 @@
           </div>
         </section>
 
+        <!-- TEXTOS -->
         <section id="textsPage" class="page">
           <div class="library-layout">
             <div class="panel">
@@ -280,6 +436,7 @@
 
             <div class="panel">
               <h2>Biblioteca</h2>
+
               <div id="textsList" class="list">
                 <div class="empty-state">Nenhum texto cadastrado ainda.</div>
               </div>
@@ -287,12 +444,74 @@
 
             <div class="panel text-viewer">
               <h2>Visualização</h2>
+
               <div id="textViewer">
                 <div class="empty-state">Selecione um texto para visualizar.</div>
               </div>
             </div>
           </div>
         </section>
+
+        <!-- CONFIGURAÇÕES -->
+        <section id="settingsPage" class="page">
+          <div class="settings-grid">
+
+            <div class="panel">
+              <h2>Tipos de pontuação</h2>
+
+              <form id="scoreTypeForm" class="form">
+                <label for="scoreTypeName">Nome do tipo</label>
+                <input type="text" id="scoreTypeName" placeholder="Exemplo: Entrega de atividade" required />
+
+                <label for="scoreTypeValue">Pontos padrão</label>
+                <input type="number" id="scoreTypeValue" placeholder="Exemplo: 100" required />
+
+                <button type="submit" class="btn btn-primary">Salvar tipo</button>
+              </form>
+
+              <div id="scoreTypesList" class="list settings-list">
+                <div class="empty-state">Nenhum tipo cadastrado ainda.</div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h2>Responsáveis</h2>
+
+              <form id="responsibleForm" class="form">
+                <label for="responsibleName">Nome do responsável</label>
+                <input type="text" id="responsibleName" placeholder="Exemplo: Mayke" required />
+
+                <button type="submit" class="btn btn-primary">Salvar responsável</button>
+              </form>
+
+              <div id="responsiblesList" class="list settings-list">
+                <div class="empty-state">Nenhum responsável cadastrado ainda.</div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h2>Backup dos dados</h2>
+
+              <p class="hint">
+                Exporte os dados para guardar uma cópia de segurança ou importe um backup salvo anteriormente.
+              </p>
+
+              <div class="backup-actions">
+                <button id="exportBackupBtn" class="btn btn-primary">Exportar backup JSON</button>
+
+                <label class="file-label" for="importBackupInput">
+                  Importar backup JSON
+                </label>
+
+                <input type="file" id="importBackupInput" accept=".json,application/json" />
+              </div>
+
+              <p id="backupMessage" class="message"></p>
+            </div>
+
+          </div>
+        </section>
+
       </main>
     </section>
   </div>
