@@ -6,6 +6,18 @@
 
   <title>Central Ascensão Lunar</title>
 
+  <!--
+    FAVICON / ÍCONE DO SITE
+
+    Crie uma pasta chamada assets e coloque um arquivo chamado favicon.png.
+    Caminho esperado:
+    assets/favicon.png
+
+    Se ainda não tiver o arquivo, o site continua funcionando.
+  -->
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+
+  <!-- CSS principal -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 
@@ -16,11 +28,16 @@
     <section id="loginScreen" class="login-screen">
       <div class="login-card">
         <div class="brand-area">
-          <div class="brand-symbol">🌙</div>
+          <div class="brand-symbol">
+            <img src="assets/favicon.png" alt="Logo Ascensão Lunar" onerror="this.style.display='none'; this.parentElement.classList.add('logo-fallback');" />
+            <span>🌙</span>
+          </div>
+
           <h1>Central Ascensão Lunar</h1>
+
           <p>
             Painel administrativo para gerenciar membros, pontuações,
-            rankings, atividades, textos e backups do Ascensão Lunar.
+            rankings, atividades, textos, relatórios e backups do Ascensão Lunar.
           </p>
         </div>
 
@@ -44,7 +61,10 @@
       <!-- MENU LATERAL -->
       <aside class="sidebar">
         <div class="sidebar-header">
-          <div class="sidebar-logo">🌙</div>
+          <div class="sidebar-logo">
+            <img src="assets/favicon.png" alt="Logo Ascensão Lunar" onerror="this.style.display='none'; this.parentElement.classList.add('logo-fallback');" />
+            <span>🌙</span>
+          </div>
 
           <div>
             <h2>Ascensão</h2>
@@ -81,7 +101,11 @@
             <span>📚</span> Textos
           </button>
 
-          <button class="menu-btn" data-page="settingsPage" data-title="Configurações" data-subtitle="Tipos de pontuação, responsáveis, status e backups.">
+          <button class="menu-btn" data-page="reportsPage" data-title="Relatórios" data-subtitle="Gere relatórios simples para imprimir ou salvar em PDF.">
+            <span>🖨️</span> Relatórios
+          </button>
+
+          <button class="menu-btn" data-page="settingsPage" data-title="Configurações" data-subtitle="Tipos de pontuação, responsáveis, backups e limpeza de dados.">
             <span>⚙️</span> Configurações
           </button>
         </nav>
@@ -282,7 +306,9 @@
                 <input type="date" id="pointsDate" required />
 
                 <label for="pointsResponsible">Responsável</label>
-                <input type="text" id="pointsResponsible" required />
+                <select id="pointsResponsible" required>
+                  <option value="">Selecione um responsável</option>
+                </select>
 
                 <button type="submit" class="btn btn-primary">Salvar pontuação</button>
               </form>
@@ -452,6 +478,56 @@
           </div>
         </section>
 
+        <!-- RELATÓRIOS -->
+        <section id="reportsPage" class="page">
+          <div class="reports-layout">
+            <div class="panel no-print">
+              <h2>Gerar relatório</h2>
+
+              <form id="reportForm" class="form">
+                <label for="reportType">Tipo de relatório</label>
+                <select id="reportType" required>
+                  <option value="members">Membros cadastrados</option>
+                  <option value="ranking-general">Ranking geral</option>
+                  <option value="points">Histórico de pontuação</option>
+                  <option value="activities">Atividades</option>
+                  <option value="texts">Textos cadastrados</option>
+                </select>
+
+                <label for="reportStart">Data inicial</label>
+                <input type="date" id="reportStart" />
+
+                <label for="reportEnd">Data final</label>
+                <input type="date" id="reportEnd" />
+
+                <button type="submit" class="btn btn-primary">Gerar relatório</button>
+              </form>
+
+              <button id="printReportBtn" class="btn btn-secondary full-btn">
+                Imprimir / Salvar em PDF
+              </button>
+            </div>
+
+            <div class="panel report-panel">
+              <div id="reportArea" class="report-area">
+                <div class="report-header">
+                  <div class="report-logo">
+                    <img src="assets/favicon.png" alt="Logo Ascensão Lunar" onerror="this.style.display='none'; this.parentElement.classList.add('logo-fallback');" />
+                    <span>🌙</span>
+                  </div>
+
+                  <div>
+                    <h2>Relatório Ascensão Lunar</h2>
+                    <p>Gere um relatório usando o formulário ao lado.</p>
+                  </div>
+                </div>
+
+                <div class="empty-state">Nenhum relatório gerado ainda.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- CONFIGURAÇÕES -->
         <section id="settingsPage" class="page">
           <div class="settings-grid">
@@ -507,6 +583,21 @@
               </div>
 
               <p id="backupMessage" class="message"></p>
+            </div>
+
+            <div class="panel danger-panel">
+              <h2>Limpeza de pontuação</h2>
+
+              <p class="hint">
+                Esta ação apaga os registros do histórico de pontuação e zera os pontos dos membros.
+                Use apenas se tiver certeza e, de preferência, exporte um backup antes.
+              </p>
+
+              <button id="clearPointsBtn" class="btn btn-danger full-btn">
+                Limpar registros de pontuação
+              </button>
+
+              <p id="clearPointsMessage" class="message"></p>
             </div>
 
           </div>
