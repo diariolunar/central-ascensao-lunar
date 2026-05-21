@@ -7,7 +7,6 @@ import {
   collection,
   addDoc,
   getDocs,
-  getDoc,
   doc,
   updateDoc,
   deleteDoc,
@@ -18,35 +17,11 @@ import {
 
 /*
 ========================================================
-UTILS
+ATALHO
 ========================================================
 */
 
 const $ = (id) => document.getElementById(id);
-
-function escapeHTML(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function escapeAttribute(value) {
-  return escapeHTML(value).replaceAll("\n", " ");
-}
-
-function escapeRegExp(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function formatDate(dateString) {
-  if (!dateString) return "Sem data";
-
-  const [year, month, day] = dateString.split("-");
-  return `${day}/${month}/${year}`;
-}
 
 /*
 ========================================================
@@ -55,58 +30,48 @@ ELEMENTOS
 */
 
 const loginForm = $("loginForm");
+const loginMessage = $("loginMessage");
 const loginScreen = $("loginScreen");
 const mainApp = $("mainApp");
-const loginMessage = $("loginMessage");
+const logoutBtn = $("logoutBtn");
 
 const menuButtons = document.querySelectorAll(".menu-btn");
 const pages = document.querySelectorAll(".page");
-
 const pageTitle = $("pageTitle");
 const pageSubtitle = $("pageSubtitle");
-
-const logoutBtn = $("logoutBtn");
-
-/* dashboard */
 
 const totalMembers = $("totalMembers");
 const totalPoints = $("totalPoints");
 const openActivities = $("openActivities");
 const totalTexts = $("totalTexts");
-
 const latestMovements = $("latestMovements");
 const dashboardTopMember = $("dashboardTopMember");
 const dashboardPendingActivities = $("dashboardPendingActivities");
 const dashboardPendingTexts = $("dashboardPendingTexts");
-
-/* membros */
 
 const memberForm = $("memberForm");
 const memberSheet = $("memberSheet");
 const memberPreview = $("memberPreview");
 const savePreviewMemberBtn = $("savePreviewMemberBtn");
 const clearPreviewBtn = $("clearPreviewBtn");
-
 const membersList = $("membersList");
 const membersCount = $("membersCount");
 const memberSearch = $("memberSearch");
 const memberStatusFilter = $("memberStatusFilter");
 
 const memberProfileContent = $("memberProfileContent");
-
 const internalNotesForm = $("internalNotesForm");
 const internalNotesMemberId = $("internalNotesMemberId");
 const internalNotesText = $("internalNotesText");
 
-/* pontuação */
-
 const pointsForm = $("pointsForm");
 const pointsMember = $("pointsMember");
 const pointsType = $("pointsType");
+const pointsValue = $("pointsValue");
+const pointsReason = $("pointsReason");
+const pointsDate = $("pointsDate");
 const pointsResponsible = $("pointsResponsible");
 const pointsHistory = $("pointsHistory");
-
-/* ranking */
 
 const rankingForm = $("rankingForm");
 const rankingTopThree = $("rankingTopThree");
@@ -114,23 +79,16 @@ const rankingList = $("rankingList");
 const generateGeneralRankingBtn = $("generateGeneralRankingBtn");
 const generalRankingList = $("generalRankingList");
 
-/* atividades */
-
 const activityForm = $("activityForm");
 const activitiesList = $("activitiesList");
-
-/* textos */
 
 const textForm = $("textForm");
 const textMember = $("textMember");
 const textsList = $("textsList");
 const textViewer = $("textViewer");
 
-/* configurações */
-
 const scoreTypeForm = $("scoreTypeForm");
 const scoreTypesList = $("scoreTypesList");
-
 const responsibleForm = $("responsibleForm");
 const responsiblesList = $("responsiblesList");
 
@@ -141,9 +99,10 @@ const backupMessage = $("backupMessage");
 const clearPointsBtn = $("clearPointsBtn");
 const clearPointsMessage = $("clearPointsMessage");
 
-/* relatórios */
-
 const reportForm = $("reportForm");
+const reportType = $("reportType");
+const reportStart = $("reportStart");
+const reportEnd = $("reportEnd");
 const reportArea = $("reportArea");
 const printReportBtn = $("printReportBtn");
 
@@ -161,7 +120,6 @@ let allScoreTypes = [];
 let allResponsibles = [];
 
 let pendingMember = null;
-
 let editingMemberId = null;
 let editingActivityId = null;
 let editingTextId = null;
@@ -185,7 +143,7 @@ loginForm.addEventListener("submit", async (event) => {
     loginMessage.textContent = "";
   } catch (error) {
     console.error(error);
-    loginMessage.textContent = "Erro ao entrar.";
+    loginMessage.textContent = "Erro ao entrar. Verifique e-mail e senha.";
   }
 });
 
@@ -222,24 +180,23 @@ menuButtons.forEach((button) => {
 });
 
 function showPage(pageId, title, subtitle) {
-  pages.forEach((page) => page.classList.remove("active-page"));
+  pages.forEach((page) => {
+    page.classList.remove("active-page");
+  });
 
   $(pageId).classList.add("active-page");
 
   menuButtons.forEach((button) => {
-    button.classList.toggle(
-      "active",
-      button.dataset.page === pageId
-    );
+    button.classList.toggle("active", button.dataset.page === pageId);
   });
 
-  pageTitle.textContent = title || "";
+  pageTitle.textContent = title || "Central Ascensão Lunar";
   pageSubtitle.textContent = subtitle || "";
 }
 
 /*
 ========================================================
-LOAD GERAL
+CARREGAMENTO GERAL
 ========================================================
 */
 
@@ -266,20 +223,19 @@ memberForm.addEventListener("submit", (event) => {
   const rawText = memberSheet.value.trim();
 
   if (!rawText) {
-    alert("Cole a ficha.");
+    alert("Cole a ficha do membro.");
     return;
   }
 
   pendingMember = parseMemberSheet(rawText);
 
   memberPreview.innerHTML = createParsedMemberFormHTML(pendingMember);
-
   savePreviewMemberBtn.classList.remove("hidden");
 });
 
 savePreviewMemberBtn.addEventListener("click", async () => {
   if (!pendingMember) {
-    alert("Reconheça a ficha primeiro.");
+    alert("Reconheça uma ficha antes de salvar.");
     return;
   }
 
@@ -287,18 +243,16 @@ savePreviewMemberBtn.addEventListener("click", async () => {
 
   try {
     if (editingMemberId) {
-      const oldMember = allMembers.find(
-        (member) => member.id === editingMemberId
-      );
+      const oldMember = allMembers.find((member) => member.id === editingMemberId);
 
       await updateDoc(doc(db, "members", editingMemberId), {
         ...memberData,
         points: Number(oldMember?.points || 0),
+        internalNotes: oldMember?.internalNotes || "",
         rawSheet: memberSheet.value.trim()
       });
 
       editingMemberId = null;
-
       savePreviewMemberBtn.textContent = "Salvar membro";
     } else {
       await addDoc(collection(db, "members"), {
@@ -311,11 +265,9 @@ savePreviewMemberBtn.addEventListener("click", async () => {
     }
 
     memberForm.reset();
-
     resetPreview();
 
     await loadMembers();
-
     updateDashboard();
 
     showPage(
@@ -332,6 +284,7 @@ savePreviewMemberBtn.addEventListener("click", async () => {
 clearPreviewBtn.addEventListener("click", () => {
   memberForm.reset();
 
+  pendingMember = null;
   editingMemberId = null;
 
   savePreviewMemberBtn.textContent = "Salvar membro";
@@ -349,10 +302,7 @@ membersList.addEventListener("click", async (event) => {
 
   const action = button.dataset.action;
   const memberId = button.dataset.id;
-
-  const member = allMembers.find(
-    (item) => item.id === memberId
-  );
+  const member = allMembers.find((item) => item.id === memberId);
 
   if (!member) return;
 
@@ -360,47 +310,48 @@ membersList.addEventListener("click", async (event) => {
     openMemberProfile(member);
   }
 
+  if (action === "quick-points") {
+    showPage(
+      "pointsPage",
+      "Pontuações",
+      "Adicione ou retire pontos dos membros."
+    );
+
+    pointsMember.value = member.id;
+    pointsValue.focus();
+  }
+
   if (action === "edit") {
     editingMemberId = member.id;
 
-    memberSheet.value =
-      member.rawSheet || formatMemberDetails(member);
+    memberSheet.value = member.rawSheet || formatMemberDetails(member);
 
     pendingMember = normalizeOldMember(member);
 
-    memberPreview.innerHTML =
-      createParsedMemberFormHTML(pendingMember);
+    memberPreview.innerHTML = createParsedMemberFormHTML(pendingMember);
 
-    savePreviewMemberBtn.textContent =
-      "Salvar alterações";
-
+    savePreviewMemberBtn.textContent = "Salvar alterações";
     savePreviewMemberBtn.classList.remove("hidden");
 
     showPage(
       "registerMemberPage",
       "Editar membro",
-      "Edite os dados do membro."
+      "Altere os campos e salve as mudanças."
     );
   }
 
   if (action === "delete") {
     if (!confirm(`Excluir ${member.name}?`)) return;
 
-    await deleteDoc(doc(db, "members", member.id));
+    try {
+      await deleteDoc(doc(db, "members", member.id));
 
-    await loadMembers();
-
-    updateDashboard();
-  }
-
-  if (action === "quick-points") {
-    showPage(
-      "pointsPage",
-      "Pontuações",
-      "Adicione ou retire pontos."
-    );
-
-    pointsMember.value = member.id;
+      await loadMembers();
+      updateDashboard();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao excluir membro.");
+    }
   }
 });
 
@@ -409,34 +360,39 @@ internalNotesForm.addEventListener("submit", async (event) => {
 
   const memberId = internalNotesMemberId.value;
 
-  if (!memberId) return;
+  if (!memberId) {
+    alert("Nenhum membro selecionado.");
+    return;
+  }
 
-  await updateDoc(doc(db, "members", memberId), {
-    internalNotes: internalNotesText.value.trim()
-  });
+  try {
+    await updateDoc(doc(db, "members", memberId), {
+      internalNotes: internalNotesText.value.trim()
+    });
 
-  await loadMembers();
+    await loadMembers();
 
-  alert("Observações salvas.");
+    const updatedMember = allMembers.find((member) => member.id === memberId);
+
+    if (updatedMember) {
+      openMemberProfile(updatedMember);
+    }
+
+    alert("Observações salvas.");
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao salvar observações.");
+  }
 });
 
 async function loadMembers() {
-  const q = query(
-    collection(db, "members"),
-    orderBy("createdAt", "desc")
-  );
-
+  const q = query(collection(db, "members"), orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
 
   allMembers = [];
 
-  membersList.innerHTML = "";
-
-  pointsMember.innerHTML =
-    `<option value="">Selecione um membro</option>`;
-
-  textMember.innerHTML =
-    `<option value="">Selecione um membro</option>`;
+  pointsMember.innerHTML = `<option value="">Selecione um membro</option>`;
+  textMember.innerHTML = `<option value="">Selecione um membro</option>`;
 
   snapshot.forEach((docItem) => {
     const member = {
@@ -465,63 +421,52 @@ async function loadMembers() {
 }
 
 function renderMembers() {
-  const searchTerm = memberSearch.value
-    .toLowerCase()
-    .trim();
-
+  const searchTerm = memberSearch.value.toLowerCase().trim();
   const statusFilter = memberStatusFilter.value;
 
-  const filtered = allMembers.filter((member) => {
-    const text = `
+  const filteredMembers = allMembers.filter((member) => {
+    const searchableText = `
       ${member.name || ""}
       ${member.wattpad || ""}
+      ${member.user || ""}
       ${member.phone || ""}
+      ${member.age || ""}
       ${member.writingGenre || ""}
+      ${member.genre || ""}
+      ${member.completedWork || ""}
+      ${member.status || ""}
     `.toLowerCase();
 
-    const matchesSearch = text.includes(searchTerm);
-
-    const matchesStatus =
-      !statusFilter || member.status === statusFilter;
+    const matchesSearch = searchableText.includes(searchTerm);
+    const matchesStatus = !statusFilter || member.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
 
-  membersList.innerHTML = filtered.length
-    ? filtered
-        .map((member) =>
-          createMemberCardHTML(member)
-        )
-        .join("")
+  membersList.innerHTML = filteredMembers.length
+    ? filteredMembers.map((member) => createMemberCardHTML(member)).join("")
     : `<div class="empty-state">Nenhum membro encontrado.</div>`;
 
-  membersCount.textContent = `${filtered.length} membros`;
+  membersCount.textContent = `${filteredMembers.length} membros`;
 }
 
 function openMemberProfile(member) {
-  const memberPoints = allPoints.filter(
-    (point) => point.memberId === member.id
-  );
+  const memberPoints = allPoints.filter((point) => point.memberId === member.id);
+  const memberTexts = allTexts.filter((text) => text.memberId === member.id);
 
-  const memberTexts = allTexts.filter(
-    (text) => text.memberId === member.id
+  memberProfileContent.innerHTML = createMemberProfileHTML(
+    member,
+    memberPoints,
+    memberTexts
   );
-
-  memberProfileContent.innerHTML =
-    createMemberProfileHTML(
-      member,
-      memberPoints,
-      memberTexts
-    );
 
   internalNotesMemberId.value = member.id;
-  internalNotesText.value =
-    member.internalNotes || "";
+  internalNotesText.value = member.internalNotes || "";
 
   showPage(
     "memberProfilePage",
     "Perfil do membro",
-    "Informações completas do membro."
+    "Informações completas e observações internas."
   );
 }
 
@@ -532,64 +477,62 @@ PONTUAÇÕES
 */
 
 pointsType.addEventListener("change", () => {
-  const selected = allScoreTypes.find(
-    (type) => type.id === pointsType.value
-  );
+  const selected = allScoreTypes.find((type) => type.id === pointsType.value);
 
   if (!selected) return;
 
-  $("pointsValue").value = selected.value;
-  $("pointsReason").value = selected.name;
+  pointsValue.value = Number(selected.value || 0);
+  pointsReason.value = selected.name || "";
 });
 
 pointsForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const member = allMembers.find(
-    (item) => item.id === pointsMember.value
-  );
+  const memberId = pointsMember.value;
+  const selectedMember = allMembers.find((member) => member.id === memberId);
 
-  if (!member) {
-    alert("Selecione um membro.");
+  if (!selectedMember) {
+    alert("Selecione um membro válido.");
     return;
   }
 
-  const value = Number($("pointsValue").value);
+  if (!pointsResponsible.value) {
+    alert("Selecione um responsável.");
+    return;
+  }
 
-  await addPointToMember({
-    member,
-    value,
-    reason: $("pointsReason").value,
-    date: $("pointsDate").value,
-    responsible: pointsResponsible.value,
-    origin: "manual"
-  });
+  try {
+    await addPointToMember({
+      member: selectedMember,
+      value: Number(pointsValue.value || 0),
+      reason: pointsReason.value,
+      date: pointsDate.value,
+      responsible: pointsResponsible.value,
+      origin: "manual"
+    });
 
-  pointsForm.reset();
+    pointsForm.reset();
 
-  await loadMembers();
-  await loadPoints();
+    await loadMembers();
+    await loadPoints();
 
-  updateDashboard();
+    updateDashboard();
+  } catch (error) {
+    console.error(error);
+    alert("Erro ao lançar pontuação.");
+  }
 });
 
-async function addPointToMember({
-  member,
-  value,
-  reason,
-  date,
-  responsible,
-  origin
-}) {
+async function addPointToMember({ member, value, reason, date, responsible, origin }) {
   await addDoc(collection(db, "points"), {
     memberId: member.id,
     memberName: member.name,
-    memberUser: member.wattpad || "",
-    value,
+    memberUser: member.wattpad || member.user || "",
+    value: Number(value || 0),
     reason,
     date,
     responsible,
-    origin,
+    origin: origin || "manual",
     createdAt: Timestamp.now()
   });
 
@@ -599,11 +542,7 @@ async function addPointToMember({
 }
 
 async function loadPoints() {
-  const q = query(
-    collection(db, "points"),
-    orderBy("createdAt", "desc")
-  );
-
+  const q = query(collection(db, "points"), orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
 
   allPoints = [];
@@ -624,23 +563,24 @@ async function loadPoints() {
 
     total += Number(point.value || 0);
 
-    pointsHistory.innerHTML +=
-      createPointHistoryHTML(point);
+    const html = createPointHistoryHTML(point);
+
+    pointsHistory.innerHTML += html;
 
     if (movementCount < 5) {
-      latestMovements.innerHTML +=
-        createPointHistoryHTML(point);
-
+      latestMovements.innerHTML += html;
       movementCount++;
     }
   });
 
   if (snapshot.empty) {
-    pointsHistory.innerHTML =
-      `<div class="empty-state">Nenhum ponto lançado.</div>`;
+    pointsHistory.innerHTML = `
+      <div class="empty-state">Nenhum ponto lançado ainda.</div>
+    `;
 
-    latestMovements.innerHTML =
-      `<div class="empty-state">Nenhuma movimentação.</div>`;
+    latestMovements.innerHTML = `
+      <div class="empty-state">Nenhuma movimentação registrada ainda.</div>
+    `;
   }
 
   totalPoints.textContent = total;
@@ -648,21 +588,27 @@ async function loadPoints() {
 
 /*
 ========================================================
-LIMPAR PONTUAÇÃO
+LIMPAR REGISTROS DE PONTUAÇÃO
 ========================================================
 */
 
 clearPointsBtn.addEventListener("click", async () => {
-  const confirmed = confirm(
-    "Isso apagará TODOS os registros de pontuação e zerará os pontos dos membros. Continuar?"
+  const firstConfirm = confirm(
+    "Isso vai apagar TODOS os registros de pontuação e zerar os pontos de TODOS os membros. Continuar?"
   );
 
-  if (!confirmed) return;
+  if (!firstConfirm) return;
+
+  const secondConfirm = confirm(
+    "Tem certeza absoluta? Essa ação não pode ser desfeita sem backup."
+  );
+
+  if (!secondConfirm) return;
 
   try {
-    const snapshot = await getDocs(collection(db, "points"));
+    const pointsSnapshot = await getDocs(collection(db, "points"));
 
-    for (const pointDoc of snapshot.docs) {
+    for (const pointDoc of pointsSnapshot.docs) {
       await deleteDoc(doc(db, "points", pointDoc.id));
     }
 
@@ -672,365 +618,121 @@ clearPointsBtn.addEventListener("click", async () => {
       });
     }
 
-    clearPointsMessage.textContent =
-      "Pontuações apagadas com sucesso.";
+    clearPointsMessage.textContent = "Registros de pontuação apagados e pontos zerados.";
 
     await loadMembers();
     await loadPoints();
-
     updateDashboard();
   } catch (error) {
     console.error(error);
-
-    clearPointsMessage.textContent =
-      "Erro ao limpar pontuações.";
+    clearPointsMessage.textContent = "Erro ao limpar registros de pontuação.";
   }
 });
 
 /*
 ========================================================
-RESPONSÁVEIS
+RANKINGS
 ========================================================
 */
 
-responsibleForm.addEventListener("submit", async (event) => {
+rankingForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
-  await addDoc(collection(db, "responsibles"), {
-    name: $("responsibleName").value,
-    createdAt: Timestamp.now()
+  const start = $("rankingStart").value;
+  const end = $("rankingEnd").value;
+
+  const rankingMap = {};
+
+  allPoints.forEach((point) => {
+    if (point.date >= start && point.date <= end) {
+      rankingMap[point.memberId] =
+        Number(rankingMap[point.memberId] || 0) + Number(point.value || 0);
+    }
   });
 
-  responsibleForm.reset();
+  const finalRanking = Object.entries(rankingMap)
+    .map(([memberId, points]) => {
+      const member = allMembers.find((item) => item.id === memberId);
 
-  await loadResponsibles();
+      return {
+        name: member?.name || "Membro",
+        user: member?.wattpad || member?.user || "",
+        work: member?.completedWork || "",
+        points
+      };
+    })
+    .sort((a, b) => b.points - a.points);
+
+  renderRanking(finalRanking, rankingTopThree, rankingList);
 });
 
-responsiblesList.addEventListener("click", async (event) => {
-  const button = event.target.closest("button");
-
-  if (!button) return;
-
-  await deleteDoc(
-    doc(db, "responsibles", button.dataset.id)
-  );
-
-  await loadResponsibles();
+generateGeneralRankingBtn.addEventListener("click", () => {
+  renderGeneralRanking();
 });
 
-async function loadResponsibles() {
-  const snapshot = await getDocs(
-    collection(db, "responsibles")
-  );
-
-  allResponsibles = [];
-
-  responsiblesList.innerHTML = "";
-
-  pointsResponsible.innerHTML =
-    `<option value="">Selecione um responsável</option>`;
-
-  snapshot.forEach((docItem) => {
-    const responsible = {
-      id: docItem.id,
-      ...docItem.data()
-    };
-
-    allResponsibles.push(responsible);
-
-    responsiblesList.innerHTML += `
-      <div class="settings-item">
-        <span>${escapeHTML(responsible.name)}</span>
-
-        <button
-          class="btn btn-danger btn-small"
-          data-id="${responsible.id}"
-        >
-          Excluir
-        </button>
-      </div>
-    `;
-
-    pointsResponsible.innerHTML += `
-      <option value="${escapeHTML(responsible.name)}">
-        ${escapeHTML(responsible.name)}
-      </option>
-    `;
-  });
-
-  if (allResponsibles.length === 0) {
-    responsiblesList.innerHTML =
-      `<div class="empty-state">Nenhum responsável cadastrado.</div>`;
-  }
-}
-
-/*
-========================================================
-TIPOS DE PONTUAÇÃO
-========================================================
-*/
-
-scoreTypeForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  await addDoc(collection(db, "scoreTypes"), {
-    name: $("scoreTypeName").value,
-    value: Number($("scoreTypeValue").value),
-    createdAt: Timestamp.now()
-  });
-
-  scoreTypeForm.reset();
-
-  await loadScoreTypes();
-});
-
-scoreTypesList.addEventListener("click", async (event) => {
-  const button = event.target.closest("button");
-
-  if (!button) return;
-
-  await deleteDoc(
-    doc(db, "scoreTypes", button.dataset.id)
-  );
-
-  await loadScoreTypes();
-});
-
-async function loadScoreTypes() {
-  const snapshot = await getDocs(
-    collection(db, "scoreTypes")
-  );
-
-  allScoreTypes = [];
-
-  scoreTypesList.innerHTML = "";
-
-  pointsType.innerHTML =
-    `<option value="">Selecionar tipo manualmente</option>`;
-
-  snapshot.forEach((docItem) => {
-    const type = {
-      id: docItem.id,
-      ...docItem.data()
-    };
-
-    allScoreTypes.push(type);
-
-    scoreTypesList.innerHTML += `
-      <div class="settings-item">
-        <span>
-          ${escapeHTML(type.name)} — ${type.value} pts
-        </span>
-
-        <button
-          class="btn btn-danger btn-small"
-          data-id="${type.id}"
-        >
-          Excluir
-        </button>
-      </div>
-    `;
-
-    pointsType.innerHTML += `
-      <option value="${type.id}">
-        ${escapeHTML(type.name)} — ${type.value} pts
-      </option>
-    `;
-  });
-
-  if (allScoreTypes.length === 0) {
-    scoreTypesList.innerHTML =
-      `<div class="empty-state">Nenhum tipo cadastrado.</div>`;
-  }
-}
-
-/*
-========================================================
-RELATÓRIOS
-========================================================
-*/
-
-reportForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const type = $("reportType").value;
-
-  if (type === "members") {
-    generateMembersReport();
-  }
-
-  if (type === "ranking-general") {
-    generateGeneralRankingReport();
-  }
-
-  if (type === "points") {
-    generatePointsReport();
-  }
-
-  if (type === "activities") {
-    generateActivitiesReport();
-  }
-
-  if (type === "texts") {
-    generateTextsReport();
-  }
-});
-
-printReportBtn.addEventListener("click", () => {
-  window.print();
-});
-
-function generateMembersReport() {
-  reportArea.innerHTML = `
-    ${createReportHeader("Relatório de membros")}
-
-    <table class="report-table">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Wattpad</th>
-          <th>Status</th>
-          <th>Pontos</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        ${allMembers.map((member) => `
-          <tr>
-            <td>${escapeHTML(member.name)}</td>
-            <td>${escapeHTML(member.wattpad || "")}</td>
-            <td>${escapeHTML(member.status || "")}</td>
-            <td>${Number(member.points || 0)}</td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  `;
-}
-
-function generateGeneralRankingReport() {
+function renderGeneralRanking() {
   const ranking = [...allMembers]
-    .sort((a, b) => Number(b.points || 0) - Number(a.points || 0));
+    .sort((a, b) => Number(b.points || 0) - Number(a.points || 0))
+    .map((member) => ({
+      name: member.name,
+      user: member.wattpad || member.user || "",
+      work: member.completedWork || "",
+      points: Number(member.points || 0)
+    }));
 
-  reportArea.innerHTML = `
-    ${createReportHeader("Ranking geral")}
-
-    <table class="report-table">
-      <thead>
-        <tr>
-          <th>Posição</th>
-          <th>Nome</th>
-          <th>Pontos</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        ${ranking.map((member, index) => `
-          <tr>
-            <td>#${index + 1}</td>
-            <td>${escapeHTML(member.name)}</td>
-            <td>${Number(member.points || 0)}</td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  `;
+  generalRankingList.innerHTML = ranking.length
+    ? ranking.map((item, index) => createRankingItemHTML(item, index)).join("")
+    : `<div class="empty-state">Nenhum membro cadastrado.</div>`;
 }
 
-function generatePointsReport() {
-  reportArea.innerHTML = `
-    ${createReportHeader("Histórico de pontuação")}
+function renderRanking(finalRanking, podiumContainer, listContainer) {
+  podiumContainer.innerHTML = "";
+  listContainer.innerHTML = "";
 
-    <table class="report-table">
-      <thead>
-        <tr>
-          <th>Membro</th>
-          <th>Pontos</th>
-          <th>Motivo</th>
-          <th>Responsável</th>
-        </tr>
-      </thead>
+  if (finalRanking.length === 0) {
+    podiumContainer.innerHTML = `
+      <div class="empty-state">Nenhum ponto encontrado nesse período.</div>
+    `;
 
-      <tbody>
-        ${allPoints.map((point) => `
-          <tr>
-            <td>${escapeHTML(point.memberName)}</td>
-            <td>${Number(point.value || 0)}</td>
-            <td>${escapeHTML(point.reason || "")}</td>
-            <td>${escapeHTML(point.responsible || "")}</td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  `;
+    listContainer.innerHTML = `
+      <div class="empty-state">Nenhum ponto encontrado nesse período.</div>
+    `;
+
+    return;
+  }
+
+  const medals = ["🥇", "🥈", "🥉"];
+
+  finalRanking.slice(0, 3).forEach((item, index) => {
+    podiumContainer.innerHTML += `
+      <article class="podium-card">
+        <div class="podium-medal">${medals[index]}</div>
+        <div class="podium-position">${index + 1}º lugar</div>
+        <div class="podium-name">${escapeHTML(item.name)}</div>
+        <p>${escapeHTML(item.user || "Sem user")}</p>
+        <div class="podium-points">${Number(item.points || 0)}</div>
+        <p>pontos</p>
+      </article>
+    `;
+  });
+
+  listContainer.innerHTML = finalRanking
+    .map((item, index) => createRankingItemHTML(item, index))
+    .join("");
 }
 
-function generateActivitiesReport() {
-  reportArea.innerHTML = `
-    ${createReportHeader("Relatório de atividades")}
-
-    <table class="report-table">
-      <thead>
-        <tr>
-          <th>Atividade</th>
-          <th>Status</th>
-          <th>Prazo</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        ${allActivities.map((activity) => `
-          <tr>
-            <td>${escapeHTML(activity.title)}</td>
-            <td>${escapeHTML(activity.status)}</td>
-            <td>${formatDate(activity.deadline)}</td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  `;
-}
-
-function generateTextsReport() {
-  reportArea.innerHTML = `
-    ${createReportHeader("Relatório de textos")}
-
-    <table class="report-table">
-      <thead>
-        <tr>
-          <th>Título</th>
-          <th>Autor</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        ${allTexts.map((text) => `
-          <tr>
-            <td>${escapeHTML(text.title)}</td>
-            <td>${escapeHTML(text.memberName)}</td>
-            <td>${escapeHTML(text.status)}</td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  `;
-}
-
-function createReportHeader(title) {
+function createRankingItemHTML(item, index) {
   return `
-    <div class="report-header">
-      <div class="report-logo">
-        <img src="assets/favicon.png" alt="">
-        <span>🌙</span>
-      </div>
+    <div class="ranking-item">
+      <div class="ranking-position">#${index + 1}</div>
 
       <div>
-        <h2>${escapeHTML(title)}</h2>
-        <p>
-          Gerado em ${new Date().toLocaleString("pt-BR")}
-        </p>
+        <strong>${escapeHTML(item.name)}</strong>
+        <p>${escapeHTML(item.user || "")}</p>
+        ${item.work ? `<p>${escapeHTML(item.work)}</p>` : ""}
       </div>
+
+      <div class="ranking-points">${Number(item.points || 0)}</div>
     </div>
   `;
 }
@@ -1041,304 +743,25 @@ ATIVIDADES
 ========================================================
 */
 
-async function loadActivities() {
-  const snapshot = await getDocs(
-    collection(db, "activities")
-  );
-
-  allActivities = [];
-
-  activitiesList.innerHTML = "";
-
-  let total = 0;
-
-  snapshot.forEach((docItem) => {
-    const activity = {
-      id: docItem.id,
-      ...docItem.data()
-    };
-
-    allActivities.push(activity);
-
-    if (activity.status === "Aberta") {
-      total++;
-    }
-  });
-
-  openActivities.textContent = total;
-}
-
-/*
-========================================================
-TEXTOS
-========================================================
-*/
-
-async function loadTexts() {
-  const snapshot = await getDocs(
-    collection(db, "texts")
-  );
-
-  allTexts = [];
-
-  textsList.innerHTML = "";
-
-  snapshot.forEach((docItem) => {
-    const text = {
-      id: docItem.id,
-      ...docItem.data()
-    };
-
-    allTexts.push(text);
-  });
-
-  totalTexts.textContent = allTexts.length;
-}
-
-/*
-========================================================
-RANKING
-========================================================
-*/
-
-rankingForm.addEventListener("submit", (event) => {
+activityForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  generateQuinzenalRanking();
-});
-
-generateGeneralRankingBtn.addEventListener("click", () => {
-  generateGeneralRanking();
-});
-
-function generateGeneralRanking() {
-  const ranking = [...allMembers]
-    .sort((a, b) => Number(b.points || 0) - Number(a.points || 0));
-
-  generalRankingList.innerHTML = ranking.length
-    ? ranking.map((member, index) => `
-        <div class="ranking-item">
-          <div>#${index + 1}</div>
-
-          <div>
-            <strong>${escapeHTML(member.name)}</strong>
-            <p>${escapeHTML(member.wattpad || "")}</p>
-          </div>
-
-          <div class="ranking-points">
-            ${Number(member.points || 0)}
-          </div>
-        </div>
-      `).join("")
-    : `<div class="empty-state">Nenhum membro.</div>`;
-}
-
-function generateQuinzenalRanking() {
-  const start = $("rankingStart").value;
-  const end = $("rankingEnd").value;
-
-  const rankingMap = {};
-
-  allPoints.forEach((point) => {
-    if (point.date >= start && point.date <= end) {
-      rankingMap[point.memberId] =
-        Number(rankingMap[point.memberId] || 0) +
-        Number(point.value || 0);
-    }
-  });
-
-  const ranking = Object.entries(rankingMap)
-    .map(([memberId, points]) => {
-      const member = allMembers.find(
-        (item) => item.id === memberId
-      );
-
-      return {
-        name: member?.name || "Membro",
-        points
-      };
-    })
-    .sort((a, b) => b.points - a.points);
-
-  renderRanking(ranking);
-}
-
-function renderRanking(ranking) {
-  rankingTopThree.innerHTML = "";
-  rankingList.innerHTML = "";
-
-  if (!ranking.length) {
-    rankingTopThree.innerHTML =
-      `<div class="empty-state">Sem dados.</div>`;
-
-    rankingList.innerHTML =
-      `<div class="empty-state">Sem dados.</div>`;
-
-    return;
-  }
-
-  const medals = ["🥇", "🥈", "🥉"];
-
-  ranking.slice(0, 3).forEach((member, index) => {
-    rankingTopThree.innerHTML += `
-      <article class="podium-card">
-        <div class="podium-medal">
-          ${medals[index]}
-        </div>
-
-        <div class="podium-name">
-          ${escapeHTML(member.name)}
-        </div>
-
-        <div class="podium-points">
-          ${member.points}
-        </div>
-      </article>
-    `;
-  });
-
-  rankingList.innerHTML = ranking.map((member, index) => `
-    <div class="ranking-item">
-      <div>#${index + 1}</div>
-
-      <div>
-        <strong>${escapeHTML(member.name)}</strong>
-      </div>
-
-      <div class="ranking-points">
-        ${member.points}
-      </div>
-    </div>
-  `).join("");
-}
-
-/*
-========================================================
-BACKUP
-========================================================
-*/
-
-exportBackupBtn.addEventListener("click", () => {
-  const backup = {
-    generatedAt: new Date().toISOString(),
-    members: allMembers,
-    points: allPoints,
-    activities: allActivities,
-    texts: allTexts,
-    scoreTypes: allScoreTypes,
-    responsibles: allResponsibles
+  const activity = {
+    title: $("activityTitle").value,
+    description: $("activityDescription").value,
+    deadline: $("activityDeadline").value,
+    points: Number($("activityPoints").value || 0),
+    winnerPoints: Number($("activityWinnerPoints").value || 0),
+    status: $("activityStatus").value,
+    deliveredBy: [],
+    winners: [],
+    deliveryPointsGiven: [],
+    winnerPointsGiven: [],
+    createdAt: Timestamp.now()
   };
 
-  const blob = new Blob(
-    [JSON.stringify(backup, null, 2)],
-    {
-      type: "application/json"
-    }
-  );
+  try {
+    if (editingActivityId) {
+      const oldActivity = allActivities.find((item) => item.id === editingActivityId);
 
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download =
-    `backup-ascensao-lunar-${new Date().toISOString().slice(0,10)}.json`;
-
-  link.click();
-
-  URL.revokeObjectURL(url);
-});
-
-importBackupInput.addEventListener("change", async (event) => {
-  const file = event.target.files[0];
-
-  if (!file) return;
-
-  const confirmed = confirm(
-    "Importar backup adicionará os dados ao Firebase. Continuar?"
-  );
-
-  if (!confirmed) return;
-
-  const text = await file.text();
-
-  const backup = JSON.parse(text);
-
-  await importCollectionBackup("members", backup.members || []);
-  await importCollectionBackup("points", backup.points || []);
-  await importCollectionBackup("activities", backup.activities || []);
-  await importCollectionBackup("texts", backup.texts || []);
-  await importCollectionBackup("scoreTypes", backup.scoreTypes || []);
-  await importCollectionBackup("responsibles", backup.responsibles || []);
-
-  backupMessage.textContent =
-    "Backup importado com sucesso.";
-
-  await loadAllData();
-});
-
-async function importCollectionBackup(collectionName, items) {
-  for (const item of items) {
-    const clean = { ...item };
-
-    delete clean.id;
-
-    await addDoc(collection(db, collectionName), clean);
-  }
-}
-
-/*
-========================================================
-HELPERS
-========================================================
-*/
-
-function updateDashboard() {
-  const sorted = [...allMembers]
-    .sort((a, b) => Number(b.points || 0) - Number(a.points || 0));
-
-  dashboardTopMember.textContent = sorted[0]
-    ? `${sorted[0].name} (${sorted[0].points} pts)`
-    : "Sem dados";
-
-  dashboardPendingActivities.textContent =
-    allActivities.filter(
-      (activity) => activity.status === "Aberta"
-    ).length;
-
-  dashboardPendingTexts.textContent =
-    allTexts.filter(
-      (text) => text.status === "Pendente"
-    ).length;
-}
-
-function resetPreview() {
-  pendingMember = null;
-
-  memberPreview.innerHTML = `
-    <div class="empty-state">
-      Os campos reconhecidos aparecerão aqui.
-    </div>
-  `;
-
-  savePreviewMemberBtn.classList.add("hidden");
-}
-
-/*
-========================================================
-PLACEHOLDERS
-========================================================
-*/
-/* 
-Mantive placeholders das funções grandes que já estavam funcionando:
-- parseMemberSheet
-- createMemberCardHTML
-- createMemberProfileHTML
-- createParsedMemberFormHTML
-- createPointHistoryHTML
-- normalizeOldMember
-- formatMemberDetails
-- etc
-
-Você deve manter exatamente as versões que já estavam funcionando no seu arquivo anterior.
-*/
+      await
