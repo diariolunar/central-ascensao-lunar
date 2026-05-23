@@ -6,25 +6,13 @@
 
   <title>Central Ascensão Lunar</title>
 
-  <!--
-    FAVICON / ÍCONE DO SITE
-
-    Crie uma pasta chamada assets e coloque um arquivo chamado favicon.png.
-    Caminho esperado:
-    assets/favicon.png
-
-    Se ainda não tiver o arquivo, o site continua funcionando.
-  -->
   <link rel="icon" type="image/png" href="assets/favicon.png" />
-
-  <!-- CSS principal -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 
 <body>
   <div class="app">
 
-    <!-- LOGIN -->
     <section id="loginScreen" class="login-screen">
       <div class="login-card">
         <div class="brand-area">
@@ -55,10 +43,8 @@
       </div>
     </section>
 
-    <!-- APP PRINCIPAL -->
     <section id="mainApp" class="main-app hidden">
 
-      <!-- MENU LATERAL -->
       <aside class="sidebar">
         <div class="sidebar-header">
           <div class="sidebar-logo">
@@ -113,52 +99,68 @@
         <button id="logoutBtn" class="btn btn-secondary logout-btn">Sair</button>
       </aside>
 
-      <!-- CONTEÚDO -->
       <main class="content">
         <header class="topbar">
           <div>
+            <p class="eyebrow">Central administrativa</p>
             <h1 id="pageTitle">Início</h1>
             <p id="pageSubtitle">Visão geral da Central Ascensão Lunar.</p>
           </div>
 
-          <div class="user-pill">Administrador</div>
+          <div class="user-pill">
+            <span class="user-dot"></span>
+            Administrador
+          </div>
         </header>
 
-        <!-- DASHBOARD -->
         <section id="dashboardPage" class="page active-page">
           <div class="stats-grid">
             <article class="stat-card">
               <span>Total de membros</span>
               <strong id="totalMembers">0</strong>
+              <small>autores cadastrados</small>
             </article>
 
             <article class="stat-card">
               <span>Pontos distribuídos</span>
               <strong id="totalPoints">0</strong>
+              <small>histórico geral</small>
             </article>
 
             <article class="stat-card">
               <span>Atividades abertas</span>
               <strong id="openActivities">0</strong>
+              <small>em andamento</small>
             </article>
 
             <article class="stat-card">
               <span>Textos cadastrados</span>
               <strong id="totalTexts">0</strong>
+              <small>biblioteca interna</small>
             </article>
           </div>
 
           <div class="dashboard-grid">
             <div class="panel">
-              <h2>Últimas movimentações</h2>
+              <div class="section-title-row">
+                <div>
+                  <h2>Últimas movimentações</h2>
+                  <p class="hint">Registros recentes de pontuação lançados no sistema.</p>
+                </div>
+              </div>
 
-              <div id="latestMovements" class="list">
+              <div id="latestMovements" class="list compact-list">
                 <div class="empty-state">Nenhuma movimentação registrada ainda.</div>
               </div>
             </div>
 
             <div class="panel">
-              <h2>Resumo rápido</h2>
+              <div class="section-title-row">
+                <div>
+                  <h2>Resumo rápido</h2>
+                  <p class="hint">Indicadores principais para acompanhamento.</p>
+                </div>
+              </div>
 
               <div id="quickSummary" class="summary-list">
                 <div class="summary-item">
@@ -180,7 +182,6 @@
           </div>
         </section>
 
-        <!-- MEMBROS -->
         <section id="membersPage" class="page">
           <div class="panel">
             <div class="panel-header">
@@ -189,7 +190,7 @@
                 <p class="hint">Visualize, edite, pontue, abra o perfil ou exclua membros.</p>
               </div>
 
-              <span id="membersCount">0 membros</span>
+              <span id="membersCount" class="count-pill">0 membros</span>
             </div>
 
             <div class="filters-row">
@@ -210,16 +211,18 @@
           </div>
         </section>
 
-        <!-- CADASTRO / EDIÇÃO DE MEMBRO -->
         <section id="registerMemberPage" class="page">
           <div class="two-columns wide-left">
             <div class="panel">
-              <h2>Cadastrar membro por ficha</h2>
-
-              <p class="hint">
-                Cole a ficha de entrada exatamente como o membro enviou.
-                Depois clique em reconhecer ficha.
-              </p>
+              <div class="section-title-row">
+                <div>
+                  <h2>Cadastrar membro por ficha</h2>
+                  <p class="hint">
+                    Cole a ficha de entrada exatamente como o membro enviou.
+                    Depois clique em reconhecer ficha.
+                  </p>
+                </div>
+              </div>
 
               <form id="memberForm" class="form">
                 <label for="memberSheet">Ficha de entrada</label>
@@ -239,7 +242,12 @@
             </div>
 
             <div class="panel sticky-panel">
-              <h2>Campos reconhecidos</h2>
+              <div class="section-title-row">
+                <div>
+                  <h2>Campos reconhecidos</h2>
+                  <p class="hint">Revise antes de salvar.</p>
+                </div>
+              </div>
 
               <div id="memberPreview" class="preview-box">
                 <div class="empty-state">
@@ -255,37 +263,39 @@
           </div>
         </section>
 
-        <!-- PERFIL DO MEMBRO -->
         <section id="memberProfilePage" class="page">
-          <div class="profile-layout">
-            <div class="panel">
-              <h2>Perfil do membro</h2>
-
+          <div class="profile-shell">
+            <div class="profile-main">
               <div id="memberProfileContent">
                 <div class="empty-state">Selecione um membro para visualizar o perfil.</div>
               </div>
             </div>
 
-            <div class="panel">
+            <aside class="profile-side panel">
               <h2>Observações internas</h2>
+              <p class="hint">Anotações privadas sobre evolução, dificuldade, comportamento ou pendências.</p>
 
               <form id="internalNotesForm" class="form">
                 <input type="hidden" id="internalNotesMemberId" />
 
                 <label for="internalNotesText">Anotações</label>
-                <textarea id="internalNotesText" rows="10" placeholder="Anote evolução, dificuldades, comportamento, pendências..."></textarea>
+                <textarea id="internalNotesText" rows="12" placeholder="Anote evolução, dificuldades, comportamento, pendências..."></textarea>
 
                 <button type="submit" class="btn btn-primary">Salvar observações</button>
               </form>
-            </div>
+            </aside>
           </div>
         </section>
 
-        <!-- PONTUAÇÕES -->
         <section id="pointsPage" class="page">
           <div class="two-columns">
             <div class="panel">
-              <h2>Lançar pontuação</h2>
+              <div class="section-title-row">
+                <div>
+                  <h2>Lançar pontuação</h2>
+                  <p class="hint">Adicione ou retire pontos de um membro.</p>
+                </div>
+              </div>
 
               <form id="pointsForm" class="form">
                 <label for="pointsMember">Membro</label>
@@ -315,16 +325,20 @@
             </div>
 
             <div class="panel">
-              <h2>Histórico de pontuação</h2>
+              <div class="section-title-row">
+                <div>
+                  <h2>Histórico de pontuação</h2>
+                  <p class="hint">Últimos registros lançados.</p>
+                </div>
+              </div>
 
-              <div id="pointsHistory" class="list">
+              <div id="pointsHistory" class="list compact-list">
                 <div class="empty-state">Nenhum ponto lançado ainda.</div>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- RANKINGS -->
         <section id="rankingPage" class="page">
           <div class="panel">
             <h2>Definir período do ranking quinzenal</h2>
@@ -378,11 +392,15 @@
           </div>
         </section>
 
-        <!-- ATIVIDADES -->
         <section id="activitiesPage" class="page">
-          <div class="two-columns">
-            <div class="panel">
-              <h2>Nova atividade</h2>
+          <div class="activities-layout">
+            <div class="panel activity-form-panel">
+              <div class="section-title-row">
+                <div>
+                  <h2>Nova atividade</h2>
+                  <p class="hint">Cadastre atividades. As entregas serão registradas dentro da tela da atividade.</p>
+                </div>
+              </div>
 
               <form id="activityForm" class="form">
                 <label for="activityTitle">Título</label>
@@ -391,37 +409,123 @@
                 <label for="activityDescription">Descrição</label>
                 <textarea id="activityDescription" rows="5"></textarea>
 
-                <label for="activityDeadline">Prazo</label>
-                <input type="date" id="activityDeadline" />
+                <div class="form-grid-2">
+                  <div>
+                    <label for="activityDeadline">Prazo</label>
+                    <input type="date" id="activityDeadline" />
+                  </div>
 
-                <label for="activityPoints">Pontos por entrega</label>
-                <input type="number" id="activityPoints" />
+                  <div>
+                    <label for="activityStatus">Status</label>
+                    <select id="activityStatus">
+                      <option value="Aberta">Aberta</option>
+                      <option value="Encerrada">Encerrada</option>
+                      <option value="Cancelada">Cancelada</option>
+                    </select>
+                  </div>
+                </div>
 
-                <label for="activityWinnerPoints">Pontos extras para vencedor</label>
-                <input type="number" id="activityWinnerPoints" />
+                <div class="form-grid-2">
+                  <div>
+                    <label for="activityPoints">Pontos por entrega</label>
+                    <input type="number" id="activityPoints" />
+                  </div>
 
-                <label for="activityStatus">Status</label>
-                <select id="activityStatus">
-                  <option value="Aberta">Aberta</option>
-                  <option value="Encerrada">Encerrada</option>
-                  <option value="Cancelada">Cancelada</option>
-                </select>
+                  <div>
+                    <label for="activityWinnerPoints">Pontos extras para vencedor</label>
+                    <input type="number" id="activityWinnerPoints" />
+                  </div>
+                </div>
 
                 <button type="submit" class="btn btn-primary">Criar atividade</button>
               </form>
             </div>
 
-            <div class="panel">
-              <h2>Atividades cadastradas</h2>
+            <div class="panel activities-list-panel">
+              <div class="section-title-row">
+                <div>
+                  <h2>Atividades cadastradas</h2>
+                  <p class="hint">Clique em uma atividade para abrir a tela completa.</p>
+                </div>
+              </div>
 
-              <div id="activitiesList" class="list">
+              <div id="activitiesList" class="activity-simple-list">
                 <div class="empty-state">Nenhuma atividade cadastrada ainda.</div>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- TEXTOS -->
+        <section id="activityDetailPage" class="page">
+          <div class="activity-detail-shell">
+            <div class="activity-detail-main">
+              <button id="backToActivitiesBtn" class="btn btn-secondary activity-back-btn">
+                ← Voltar para atividades
+              </button>
+
+              <div id="activityDetailContent">
+                <div class="empty-state">Selecione uma atividade para visualizar.</div>
+              </div>
+
+              <div class="panel delivery-panel">
+                <div class="section-title-row">
+                  <div>
+                    <h2>Registrar entrega</h2>
+                    <p class="hint">Escolha o membro, cole o texto entregue e registre.</p>
+                  </div>
+                </div>
+
+                <form id="activityDeliveryForm" class="form">
+                  <input type="hidden" id="deliveryActivityId" />
+                  <input type="hidden" id="editingDeliveryId" />
+
+                  <label for="deliveryMember">Membro</label>
+                  <select id="deliveryMember" required>
+                    <option value="">Selecione um membro</option>
+                  </select>
+
+                  <label for="deliveryText">Texto entregue</label>
+                  <textarea id="deliveryText" rows="10" placeholder="Cole aqui o texto entregue pelo membro..." required></textarea>
+
+                  <button type="submit" class="btn btn-primary" id="saveDeliveryBtn">
+                    Registrar entrega
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <aside class="activity-detail-side panel">
+              <h2>Controle do desafio</h2>
+              <p class="hint">Escolha o vencedor entre os membros que já entregaram e conclua o desafio.</p>
+
+              <form id="activityWinnerForm" class="form">
+                <input type="hidden" id="winnerActivityId" />
+
+                <label for="activityWinnerSelect">Vencedor</label>
+                <select id="activityWinnerSelect">
+                  <option value="">Selecione um vencedor</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary">
+                  Salvar vencedor
+                </button>
+              </form>
+
+              <button id="completeActivityBtn" class="btn btn-primary full-btn">
+                Concluir desafio
+              </button>
+
+              <button id="editCurrentActivityBtn" class="btn btn-secondary full-btn">
+                Editar atividade
+              </button>
+
+              <button id="deleteCurrentActivityBtn" class="btn btn-danger full-btn">
+                Excluir atividade
+              </button>
+            </aside>
+          </div>
+        </section>
+
         <section id="textsPage" class="page">
           <div class="library-layout">
             <div class="panel">
@@ -478,7 +582,6 @@
           </div>
         </section>
 
-        <!-- RELATÓRIOS -->
         <section id="reportsPage" class="page">
           <div class="reports-layout">
             <div class="panel no-print">
@@ -528,7 +631,6 @@
           </div>
         </section>
 
-        <!-- CONFIGURAÇÕES -->
         <section id="settingsPage" class="page">
           <div class="settings-grid">
 
@@ -605,6 +707,23 @@
 
       </main>
     </section>
+  </div>
+
+  <div id="deliveryTextModal" class="modal hidden">
+    <div class="modal-backdrop" data-close-modal="deliveryTextModal"></div>
+
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 id="deliveryModalTitle">Texto entregue</h2>
+          <p id="deliveryModalSubtitle">Visualização da entrega</p>
+        </div>
+
+        <button class="modal-close" data-close-modal="deliveryTextModal">×</button>
+      </div>
+
+      <div id="deliveryModalContent" class="modal-content"></div>
+    </div>
   </div>
 
   <script type="module" src="js/app.js"></script>
