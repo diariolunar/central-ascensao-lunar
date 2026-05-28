@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Biblioteca Ascensão Lunar</title>
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+
+  <main class="public-library-page">
+
+    <header class="public-library-header">
+      <div class="public-logo">🌙</div>
+
+      <div>
+        <p class="eyebrow">Ascensão Lunar</p>
+        <h1>Biblioteca de Textos</h1>
+        <p>
+          Espaço de leitura dos textos registrados no projeto.
+        </p>
+      </div>
+    </header>
+
+    <section class="public-library-toolbar">
+      <input
+        type="text"
+        id="publicTextSearch"
+        placeholder="Buscar por título, autor, tipo ou status..."
+      />
+
+      <select id="publicTextTypeFilter">
+        <option value="">Todos os tipos</option>
+        <option value="Sinopse">Sinopse</option>
+        <option value="Prólogo">Prólogo</option>
+        <option value="Capítulo">Capítulo</option>
+        <option value="Cena">Cena</option>
+        <option value="Outro">Outro</option>
+      </select>
+    </section>
+
+    <section id="publicTextsList" class="public-texts-grid">
+      <div class="empty-state">Carregando biblioteca...</div>
+    </section>
+
+  </main>
+
+  <div id="publicTextModal" class="modal hidden">
+    <div class="modal-backdrop" data-close-modal="publicTextModal"></div>
+
+    <div class="modal-card large-modal">
+      <div class="modal-header">
+        <div>
+          <h2 id="publicTextModalTitle">Texto</h2>
+          <p id="publicTextModalMeta"></p>
+        </div>
+
+        <button class="modal-close" data-close-modal="publicTextModal">
+          ×
+        </button>
+      </div>
+
+      <div id="publicTextModalContent" class="modal-content"></div>
+    </div>
+  </div>
+
+  <script type="module" src="js/biblioteca.js"></script>
+</body>
+</html>

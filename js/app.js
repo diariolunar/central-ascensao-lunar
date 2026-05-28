@@ -29,6 +29,7 @@ let editingMemberId = null;
 let editingActivityId = null;
 let editingTextId = null;
 let currentActivityId = null;
+let currentReportCopyText = "";
 
 const loginForm = $("loginForm");
 const loginMessage = $("loginMessage");
@@ -82,6 +83,8 @@ const rankingList = $("rankingList");
 const generateGeneralRankingBtn = $("generateGeneralRankingBtn");
 const generalRankingList = $("generalRankingList");
 
+const openCreateActivityModalBtn = $("openCreateActivityModalBtn");
+const createActivityModal = $("createActivityModal");
 const activityForm = $("activityForm");
 const activityTitle = $("activityTitle");
 const activityDescription = $("activityDescription");
@@ -92,6 +95,13 @@ const activityStatus = $("activityStatus");
 const activitiesList = $("activitiesList");
 
 const activityDetailContent = $("activityDetailContent");
+const backToActivitiesBtn = $("backToActivitiesBtn");
+const openDeliveryModalBtn = $("openDeliveryModalBtn");
+const openDeliveriesPageBtn = $("openDeliveriesPageBtn");
+const backToActivityBtn = $("backToActivityBtn");
+const deliveriesList = $("deliveriesList");
+
+const deliveryModal = $("deliveryModal");
 const activityDeliveryForm = $("activityDeliveryForm");
 const deliveryActivityId = $("deliveryActivityId");
 const editingDeliveryId = $("editingDeliveryId");
@@ -105,12 +115,13 @@ const activityWinnerSelect = $("activityWinnerSelect");
 const completeActivityBtn = $("completeActivityBtn");
 const editCurrentActivityBtn = $("editCurrentActivityBtn");
 const deleteCurrentActivityBtn = $("deleteCurrentActivityBtn");
-const backToActivitiesBtn = $("backToActivitiesBtn");
 
-const deliveryTextModal = $("deliveryTextModal");
-const deliveryModalTitle = $("deliveryModalTitle");
-const deliveryModalSubtitle = $("deliveryModalSubtitle");
-const deliveryModalContent = $("deliveryModalContent");
+const openCreateTextModalBtn = $("openCreateTextModalBtn");
+const createTextModal = $("createTextModal");
+const textViewerModal = $("textViewerModal");
+const textViewerTitle = $("textViewerTitle");
+const textViewerMeta = $("textViewerMeta");
+const textViewerContent = $("textViewerContent");
 
 const textForm = $("textForm");
 const textMember = $("textMember");
@@ -119,7 +130,6 @@ const textType = $("textType");
 const textContent = $("textContent");
 const textStatus = $("textStatus");
 const textsList = $("textsList");
-const textViewer = $("textViewer");
 
 const scoreTypeForm = $("scoreTypeForm");
 const scoreTypeName = $("scoreTypeName");
@@ -143,6 +153,7 @@ const reportStart = $("reportStart");
 const reportEnd = $("reportEnd");
 const reportArea = $("reportArea");
 const printReportBtn = $("printReportBtn");
+const copyReportBtn = $("copyReportBtn");
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -182,6 +193,12 @@ menuButtons.forEach((button) => {
   });
 });
 
+document.querySelectorAll("[data-close-modal]").forEach((button) => {
+  button.addEventListener("click", () => {
+    closeModal(button.dataset.closeModal);
+  });
+});
+
 async function loadAllData() {
   await loadMembers();
   await loadPoints();
@@ -196,10 +213,7 @@ function showPage(pageId, title, subtitle) {
   pages.forEach((page) => page.classList.remove("active-page"));
 
   const page = $(pageId);
-
-  if (page) {
-    page.classList.add("active-page");
-  }
+  if (page) page.classList.add("active-page");
 
   menuButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.page === pageId);
@@ -207,6 +221,16 @@ function showPage(pageId, title, subtitle) {
 
   pageTitle.textContent = title || "Central Ascensão Lunar";
   pageSubtitle.textContent = subtitle || "";
+}
+
+function openModal(id) {
+  const modal = $(id);
+  if (modal) modal.classList.remove("hidden");
+}
+
+function closeModal(id) {
+  const modal = $(id);
+  if (modal) modal.classList.add("hidden");
 }
 
 /* MEMBROS */
@@ -263,7 +287,7 @@ savePreviewMemberBtn.addEventListener("click", async () => {
     await loadMembers();
     updateDashboard();
 
-    showPage("membersPage", "Membros", "Cards e controle dos autores cadastrados.");
+    showPage("membersPage", "Membros", "Controle completo dos membros.");
   } catch (error) {
     console.error(error);
     alert("Erro ao salvar membro.");
@@ -282,7 +306,6 @@ memberStatusFilter.addEventListener("change", renderMembers);
 
 membersList.addEventListener("click", async (event) => {
   const button = event.target.closest("button");
-
   if (!button) return;
 
   const action = button.dataset.action;
@@ -296,7 +319,7 @@ membersList.addEventListener("click", async (event) => {
   }
 
   if (action === "quick-points") {
-    showPage("pointsPage", "Pontuações", "Adicione ou retire pontos dos membros.");
+    showPage("pointsPage", "Pontuações", "Gerencie pontuações.");
     pointsMember.value = member.id;
     pointsValue.focus();
   }
@@ -308,12 +331,11 @@ membersList.addEventListener("click", async (event) => {
     memberPreview.innerHTML = createParsedMemberFormHTML(pendingMember);
     savePreviewMemberBtn.textContent = "Salvar alterações";
     savePreviewMemberBtn.classList.remove("hidden");
-    showPage("registerMemberPage", "Editar membro", "Altere os campos e salve as mudanças.");
+    showPage("registerMemberPage", "Cadastro", "Cadastro de novos membros.");
   }
 
   if (action === "delete") {
     const confirmed = confirm(`Excluir ${member.name}?`);
-
     if (!confirmed) return;
 
     await deleteDoc(doc(db, "members", member.id));
@@ -339,10 +361,7 @@ internalNotesForm.addEventListener("submit", async (event) => {
   await loadMembers();
 
   const updatedMember = allMembers.find((member) => member.id === memberId);
-
-  if (updatedMember) {
-    openMemberProfile(updatedMember);
-  }
+  if (updatedMember) openMemberProfile(updatedMember);
 
   alert("Observações internas salvas.");
 });
@@ -500,7 +519,6 @@ async function loadPoints() {
     total += Number(point.value || 0);
 
     const html = createPointHistoryHTML(point);
-
     pointsHistory.innerHTML += html;
 
     if (movementCount < 5) {
@@ -577,10 +595,7 @@ function generateQuinzenalRanking() {
 
   allPoints.forEach((point) => {
     if (point.date >= start && point.date <= end) {
-      if (!rankingMap[point.memberId]) {
-        rankingMap[point.memberId] = 0;
-      }
-
+      if (!rankingMap[point.memberId]) rankingMap[point.memberId] = 0;
       rankingMap[point.memberId] += Number(point.value || 0);
     }
   });
@@ -662,7 +677,14 @@ function createRankingItemHTML(item, index) {
   `;
 }
 
-/* ATIVIDADES NOVAS */
+/* ATIVIDADES */
+
+openCreateActivityModalBtn.addEventListener("click", () => {
+  editingActivityId = null;
+  activityForm.reset();
+  activityStatus.value = "Aberta";
+  openModal("createActivityModal");
+});
 
 activityForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -673,10 +695,7 @@ activityForm.addEventListener("submit", async (event) => {
     deadline: activityDeadline.value,
     points: Number(activityPoints.value || 0),
     winnerPoints: Number(activityWinnerPoints.value || 0),
-    status: activityStatus.value,
-    deliveries: [],
-    winner: null,
-    createdAt: Timestamp.now()
+    status: activityStatus.value
   };
 
   try {
@@ -692,11 +711,17 @@ activityForm.addEventListener("submit", async (event) => {
 
       editingActivityId = null;
     } else {
-      await addDoc(collection(db, "activities"), activityData);
+      await addDoc(collection(db, "activities"), {
+        ...activityData,
+        deliveries: [],
+        winner: null,
+        createdAt: Timestamp.now()
+      });
     }
 
     activityForm.reset();
     activityStatus.value = "Aberta";
+    closeModal("createActivityModal");
 
     await loadActivities();
     updateDashboard();
@@ -708,15 +733,37 @@ activityForm.addEventListener("submit", async (event) => {
 
 activitiesList.addEventListener("click", (event) => {
   const card = event.target.closest(".activity-simple-card");
-
   if (!card) return;
 
-  const activityId = card.dataset.id;
-  openActivityDetail(activityId);
+  openActivityDetail(card.dataset.id);
 });
 
 backToActivitiesBtn.addEventListener("click", () => {
-  showPage("activitiesPage", "Atividades", "Controle atividades, entregas, vencedores e pontuação automática.");
+  showPage("activitiesPage", "Atividades", "Controle de atividades.");
+});
+
+openDeliveryModalBtn.addEventListener("click", () => {
+  if (!currentActivityId) return;
+
+  deliveryActivityId.value = currentActivityId;
+  editingDeliveryId.value = "";
+  saveDeliveryBtn.textContent = "Registrar entrega";
+  activityDeliveryForm.reset();
+  deliveryActivityId.value = currentActivityId;
+
+  openModal("deliveryModal");
+});
+
+openDeliveriesPageBtn.addEventListener("click", () => {
+  if (!currentActivityId) return;
+
+  renderDeliveriesPage(currentActivityId);
+  showPage("deliveriesPage", "Entregas registradas", "Lista de entregas da atividade.");
+});
+
+backToActivityBtn.addEventListener("click", () => {
+  if (!currentActivityId) return;
+  openActivityDetail(currentActivityId);
 });
 
 activityDeliveryForm.addEventListener("submit", async (event) => {
@@ -763,11 +810,10 @@ activityDeliveryForm.addEventListener("submit", async (event) => {
     });
   }
 
-  await updateDoc(doc(db, "activities", activity.id), {
-    deliveries
-  });
+  await updateDoc(doc(db, "activities", activity.id), { deliveries });
 
   activityDeliveryForm.reset();
+  closeModal("deliveryModal");
 
   await loadActivities();
   openActivityDetail(activity.id);
@@ -777,7 +823,6 @@ activityWinnerForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const activity = allActivities.find((item) => item.id === winnerActivityId.value);
-
   if (!activity) return;
 
   const delivery = (activity.deliveries || []).find(
@@ -806,7 +851,6 @@ completeActivityBtn.addEventListener("click", async () => {
   if (!currentActivityId) return;
 
   const activity = allActivities.find((item) => item.id === currentActivityId);
-
   if (!activity) return;
 
   const confirmed = confirm("Concluir este desafio?");
@@ -826,7 +870,6 @@ completeActivityBtn.addEventListener("click", async () => {
 
 editCurrentActivityBtn.addEventListener("click", () => {
   const activity = allActivities.find((item) => item.id === currentActivityId);
-
   if (!activity) return;
 
   editingActivityId = activity.id;
@@ -838,12 +881,11 @@ editCurrentActivityBtn.addEventListener("click", () => {
   activityWinnerPoints.value = activity.winnerPoints || "";
   activityStatus.value = activity.status || "Aberta";
 
-  showPage("activitiesPage", "Atividades", "Controle atividades, entregas, vencedores e pontuação automática.");
+  openModal("createActivityModal");
 });
 
 deleteCurrentActivityBtn.addEventListener("click", async () => {
   const activity = allActivities.find((item) => item.id === currentActivityId);
-
   if (!activity) return;
 
   const confirmed = confirm(`Excluir atividade "${activity.title}"?`);
@@ -857,7 +899,7 @@ deleteCurrentActivityBtn.addEventListener("click", async () => {
   await loadActivities();
   updateDashboard();
 
-  showPage("activitiesPage", "Atividades", "Controle atividades, entregas, vencedores e pontuação automática.");
+  showPage("activitiesPage", "Atividades", "Controle de atividades.");
 });
 
 async function loadActivities() {
@@ -877,9 +919,7 @@ async function loadActivities() {
 
     allActivities.push(activity);
 
-    if (activity.status === "Aberta") {
-      totalOpen++;
-    }
+    if (activity.status === "Aberta") totalOpen++;
 
     activitiesList.innerHTML += createActivitySimpleCardHTML(activity);
   });
@@ -903,8 +943,6 @@ function openActivityDetail(activityId) {
 
   editingDeliveryId.value = "";
   saveDeliveryBtn.textContent = "Registrar entrega";
-
-  activityDeliveryForm.reset();
 
   renderActivityDetail(activity);
   renderWinnerSelect(activity);
@@ -975,26 +1013,18 @@ function renderActivityDetail(activity) {
           : ""
       }
     </div>
-
-    <div class="panel">
-      <div class="section-title-row">
-        <div>
-          <h2>Entregas registradas</h2>
-          <p class="hint">Lista dos membros que entregaram esta atividade.</p>
-        </div>
-      </div>
-
-      ${
-        deliveries.length
-          ? `
-            <div class="deliveries-list">
-              ${deliveries.map((delivery) => createDeliveryCardHTML(activity, delivery)).join("")}
-            </div>
-          `
-          : `<div class="empty-state">Nenhuma entrega registrada ainda.</div>`
-      }
-    </div>
   `;
+}
+
+function renderDeliveriesPage(activityId) {
+  const activity = allActivities.find((item) => item.id === activityId);
+  if (!activity) return;
+
+  const deliveries = activity.deliveries || [];
+
+  deliveriesList.innerHTML = deliveries.length
+    ? deliveries.map((delivery) => createDeliveryCardHTML(activity, delivery)).join("")
+    : `<div class="empty-state">Nenhuma entrega registrada ainda.</div>`;
 }
 
 function createActivitySimpleCardHTML(activity) {
@@ -1054,7 +1084,7 @@ function createDeliveryCardHTML(activity, delivery) {
   `;
 }
 
-activityDetailContent.addEventListener("click", async (event) => {
+deliveriesList.addEventListener("click", async (event) => {
   const button = event.target.closest("button");
 
   if (!button) return;
@@ -1064,26 +1094,25 @@ activityDetailContent.addEventListener("click", async (event) => {
   const deliveryId = button.dataset.delivery;
 
   const activity = allActivities.find((item) => item.id === activityId);
-
   if (!activity) return;
 
   const delivery = (activity.deliveries || []).find((item) => item.id === deliveryId);
-
   if (!delivery) return;
 
   if (action === "view-delivery") {
-    deliveryModalTitle.textContent = delivery.memberName;
-    deliveryModalSubtitle.textContent = activity.title;
-    deliveryModalContent.textContent = delivery.text || "";
-    deliveryTextModal.classList.remove("hidden");
+    textViewerTitle.textContent = delivery.memberName;
+    textViewerMeta.textContent = activity.title;
+    textViewerContent.textContent = delivery.text || "";
+    openModal("textViewerModal");
   }
 
   if (action === "edit-delivery") {
+    deliveryActivityId.value = activity.id;
     deliveryMember.value = delivery.memberId;
     deliveryText.value = delivery.text || "";
     editingDeliveryId.value = delivery.id;
     saveDeliveryBtn.textContent = "Salvar edição";
-    deliveryText.focus();
+    openModal("deliveryModal");
   }
 
   if (action === "delete-delivery") {
@@ -1093,27 +1122,20 @@ activityDetailContent.addEventListener("click", async (event) => {
 
     const deliveries = (activity.deliveries || []).filter((item) => item.id !== deliveryId);
 
-    await updateDoc(doc(db, "activities", activity.id), {
-      deliveries
-    });
+    await updateDoc(doc(db, "activities", activity.id), { deliveries });
 
     await loadActivities();
-    openActivityDetail(activity.id);
+    renderDeliveriesPage(activity.id);
   }
 });
 
-document.querySelectorAll("[data-close-modal]").forEach((button) => {
-  button.addEventListener("click", () => {
-    const modalId = button.dataset.closeModal;
-    const modal = $(modalId);
-
-    if (modal) {
-      modal.classList.add("hidden");
-    }
-  });
-});
-
 /* TEXTOS */
+
+openCreateTextModalBtn.addEventListener("click", () => {
+  editingTextId = null;
+  textForm.reset();
+  openModal("createTextModal");
+});
 
 textForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -1126,19 +1148,28 @@ textForm.addEventListener("submit", async (event) => {
     title: textTitle.value,
     type: textType.value,
     content: textContent.value,
-    status: textStatus.value,
-    createdAt: Timestamp.now()
+    status: textStatus.value
   };
 
   try {
     if (editingTextId) {
-      await updateDoc(doc(db, "texts", editingTextId), textData);
+      const oldText = allTexts.find((item) => item.id === editingTextId);
+
+      await updateDoc(doc(db, "texts", editingTextId), {
+        ...textData,
+        createdAt: oldText?.createdAt || Timestamp.now()
+      });
+
       editingTextId = null;
     } else {
-      await addDoc(collection(db, "texts"), textData);
+      await addDoc(collection(db, "texts"), {
+        ...textData,
+        createdAt: Timestamp.now()
+      });
     }
 
     textForm.reset();
+    closeModal("createTextModal");
 
     await loadTexts();
     updateDashboard();
@@ -1168,7 +1199,7 @@ textsList.addEventListener("click", async (event) => {
       textContent.value = text.content || "";
       textStatus.value = text.status || "Pendente";
 
-      textTitle.focus();
+      openModal("createTextModal");
     }
 
     if (action === "delete-text") {
@@ -1177,9 +1208,7 @@ textsList.addEventListener("click", async (event) => {
       if (!confirmed) return;
 
       await deleteDoc(doc(db, "texts", textId));
-
       await loadTexts();
-      resetTextViewer();
       updateDashboard();
     }
 
@@ -1191,7 +1220,10 @@ textsList.addEventListener("click", async (event) => {
     const text = allTexts.find((entry) => entry.id === textId);
 
     if (text) {
-      renderTextViewer(text);
+      textViewerTitle.textContent = text.title || "Sem título";
+      textViewerMeta.textContent = `${text.memberName || "Autor não informado"} • ${text.type || ""} • ${text.status || ""}`;
+      textViewerContent.textContent = text.content || "Sem conteúdo.";
+      openModal("textViewerModal");
     }
   }
 });
@@ -1241,7 +1273,6 @@ scoreTypesList.addEventListener("click", async (event) => {
   if (!button) return;
 
   const confirmed = confirm("Excluir este tipo de pontuação?");
-
   if (!confirmed) return;
 
   await deleteDoc(doc(db, "scoreTypes", button.dataset.id));
@@ -1253,7 +1284,7 @@ async function loadScoreTypes() {
 
   allScoreTypes = [];
   scoreTypesList.innerHTML = "";
-  pointsType.innerHTML = `<option value="">Selecionar tipo manualmente</option>`;
+  pointsType.innerHTML = `<option value="">Selecionar manualmente</option>`;
 
   snapshot.forEach((docItem) => {
     const type = {
@@ -1303,7 +1334,6 @@ responsiblesList.addEventListener("click", async (event) => {
   if (!button) return;
 
   const confirmed = confirm("Excluir este responsável?");
-
   if (!confirmed) return;
 
   await deleteDoc(doc(db, "responsibles", button.dataset.id));
@@ -1315,7 +1345,7 @@ async function loadResponsibles() {
 
   allResponsibles = [];
   responsiblesList.innerHTML = "";
-  pointsResponsible.innerHTML = `<option value="">Selecione um responsável</option>`;
+  pointsResponsible.innerHTML = `<option value="">Selecione</option>`;
 
   snapshot.forEach((docItem) => {
     const responsible = {
@@ -1431,6 +1461,18 @@ reportForm.addEventListener("submit", (event) => {
   if (type === "points") generatePointsReport();
   if (type === "activities") generateActivitiesReport();
   if (type === "texts") generateTextsReport();
+
+  copyReportBtn.classList.remove("hidden");
+});
+
+copyReportBtn.addEventListener("click", async () => {
+  if (!currentReportCopyText) {
+    alert("Gere um relatório primeiro.");
+    return;
+  }
+
+  await navigator.clipboard.writeText(currentReportCopyText);
+  alert("Relatório copiado.");
 });
 
 printReportBtn.addEventListener("click", () => {
@@ -1461,32 +1503,39 @@ function getFilteredActivitiesByReportDate() {
 }
 
 function generateMembersReport() {
+  const rows = allMembers.map((member) => ({
+    name: member.name || "",
+    user: member.wattpad || member.user || "",
+    points: Number(member.points || 0),
+    reason: member.status || ""
+  }));
+
+  currentReportCopyText = rows
+    .map((row) => `${row.name} - ${row.user} - ${row.points} - ${row.reason}`)
+    .join("\n");
+
   reportArea.innerHTML = `
     ${createReportHeader("Relatório de membros")}
 
-    <p class="report-subtitle">
-      Total de membros cadastrados: ${allMembers.length}
-    </p>
+    <p class="report-subtitle">Total de membros cadastrados: ${allMembers.length}</p>
 
     <table class="report-table">
       <thead>
         <tr>
           <th>Nome</th>
-          <th>Wattpad</th>
-          <th>Telefone</th>
-          <th>Status</th>
+          <th>User</th>
           <th>Pontos</th>
+          <th>Status</th>
         </tr>
       </thead>
 
       <tbody>
-        ${allMembers.map((member) => `
+        ${rows.map((row) => `
           <tr>
-            <td>${escapeHTML(member.name || "")}</td>
-            <td>${escapeHTML(member.wattpad || "")}</td>
-            <td>${escapeHTML(member.phone || "")}</td>
-            <td>${escapeHTML(member.status || "")}</td>
-            <td>${Number(member.points || 0)}</td>
+            <td>${escapeHTML(row.name)}</td>
+            <td>${escapeHTML(row.user)}</td>
+            <td>${row.points}</td>
+            <td>${escapeHTML(row.reason)}</td>
           </tr>
         `).join("")}
       </tbody>
@@ -1498,6 +1547,17 @@ function generateGeneralRankingReport() {
   const ranking = [...allMembers]
     .sort((a, b) => Number(b.points || 0) - Number(a.points || 0));
 
+  const rows = ranking.map((member) => ({
+    name: member.name || "",
+    user: member.wattpad || member.user || "",
+    points: Number(member.points || 0),
+    reason: "Ranking geral"
+  }));
+
+  currentReportCopyText = rows
+    .map((row) => `${row.name} - ${row.user} - ${row.points} - ${row.reason}`)
+    .join("\n");
+
   reportArea.innerHTML = `
     ${createReportHeader("Ranking geral acumulado")}
 
@@ -1506,18 +1566,18 @@ function generateGeneralRankingReport() {
         <tr>
           <th>Posição</th>
           <th>Nome</th>
-          <th>Wattpad</th>
+          <th>User</th>
           <th>Pontos</th>
         </tr>
       </thead>
 
       <tbody>
-        ${ranking.map((member, index) => `
+        ${rows.map((row, index) => `
           <tr>
             <td>#${index + 1}</td>
-            <td>${escapeHTML(member.name || "")}</td>
-            <td>${escapeHTML(member.wattpad || "")}</td>
-            <td>${Number(member.points || 0)}</td>
+            <td>${escapeHTML(row.name)}</td>
+            <td>${escapeHTML(row.user)}</td>
+            <td>${row.points}</td>
           </tr>
         `).join("")}
       </tbody>
@@ -1528,32 +1588,41 @@ function generateGeneralRankingReport() {
 function generatePointsReport() {
   const points = getFilteredPointsByReportDate();
 
+  const rows = points.map((point) => ({
+    name: point.memberName || "",
+    user: point.memberUser || "",
+    points: Number(point.value || 0),
+    reason: point.reason || ""
+  }));
+
+  currentReportCopyText = rows
+    .map((row) => `${row.name} - ${row.user} - ${row.points} - ${row.reason}`)
+    .join("\n");
+
   reportArea.innerHTML = `
     ${createReportHeader("Histórico de pontuação")}
 
-    <p class="report-subtitle">
-      Total de registros: ${points.length}
-    </p>
+    <p class="report-subtitle">Total de registros: ${points.length}</p>
 
     <table class="report-table">
       <thead>
         <tr>
           <th>Data</th>
-          <th>Membro</th>
+          <th>Nome</th>
+          <th>User</th>
           <th>Pontos</th>
           <th>Motivo</th>
-          <th>Responsável</th>
         </tr>
       </thead>
 
       <tbody>
-        ${points.map((point) => `
+        ${points.map((point, index) => `
           <tr>
             <td>${formatDate(point.date)}</td>
-            <td>${escapeHTML(point.memberName || "")}</td>
-            <td>${Number(point.value || 0)}</td>
-            <td>${escapeHTML(point.reason || "")}</td>
-            <td>${escapeHTML(point.responsible || "")}</td>
+            <td>${escapeHTML(rows[index].name)}</td>
+            <td>${escapeHTML(rows[index].user)}</td>
+            <td>${rows[index].points}</td>
+            <td>${escapeHTML(rows[index].reason)}</td>
           </tr>
         `).join("")}
       </tbody>
@@ -1564,32 +1633,39 @@ function generatePointsReport() {
 function generateActivitiesReport() {
   const activities = getFilteredActivitiesByReportDate();
 
+  const rows = activities.map((activity) => ({
+    name: activity.title || "",
+    user: activity.status || "",
+    points: Number(activity.points || 0),
+    reason: `${(activity.deliveries || []).length} entregas`
+  }));
+
+  currentReportCopyText = rows
+    .map((row) => `${row.name} - ${row.user} - ${row.points} - ${row.reason}`)
+    .join("\n");
+
   reportArea.innerHTML = `
     ${createReportHeader("Relatório de atividades")}
 
-    <p class="report-subtitle">
-      Total de atividades: ${activities.length}
-    </p>
+    <p class="report-subtitle">Total de atividades: ${activities.length}</p>
 
     <table class="report-table">
       <thead>
         <tr>
           <th>Atividade</th>
           <th>Status</th>
-          <th>Prazo</th>
+          <th>Pontos</th>
           <th>Entregas</th>
-          <th>Vencedor</th>
         </tr>
       </thead>
 
       <tbody>
-        ${activities.map((activity) => `
+        ${rows.map((row) => `
           <tr>
-            <td>${escapeHTML(activity.title || "")}</td>
-            <td>${escapeHTML(activity.status || "")}</td>
-            <td>${formatDate(activity.deadline)}</td>
-            <td>${(activity.deliveries || []).length}</td>
-            <td>${escapeHTML(activity.winner?.name || "")}</td>
+            <td>${escapeHTML(row.name)}</td>
+            <td>${escapeHTML(row.user)}</td>
+            <td>${row.points}</td>
+            <td>${escapeHTML(row.reason)}</td>
           </tr>
         `).join("")}
       </tbody>
@@ -1598,30 +1674,37 @@ function generateActivitiesReport() {
 }
 
 function generateTextsReport() {
+  const rows = allTexts.map((text) => ({
+    name: text.memberName || "",
+    user: text.title || "",
+    points: 0,
+    reason: text.status || ""
+  }));
+
+  currentReportCopyText = rows
+    .map((row) => `${row.name} - ${row.user} - ${row.points} - ${row.reason}`)
+    .join("\n");
+
   reportArea.innerHTML = `
     ${createReportHeader("Relatório de textos")}
 
-    <p class="report-subtitle">
-      Total de textos cadastrados: ${allTexts.length}
-    </p>
+    <p class="report-subtitle">Total de textos cadastrados: ${allTexts.length}</p>
 
     <table class="report-table">
       <thead>
         <tr>
-          <th>Título</th>
           <th>Autor</th>
-          <th>Tipo</th>
+          <th>Título</th>
           <th>Status</th>
         </tr>
       </thead>
 
       <tbody>
-        ${allTexts.map((text) => `
+        ${rows.map((row) => `
           <tr>
-            <td>${escapeHTML(text.title || "")}</td>
-            <td>${escapeHTML(text.memberName || "")}</td>
-            <td>${escapeHTML(text.type || "")}</td>
-            <td>${escapeHTML(text.status || "")}</td>
+            <td>${escapeHTML(row.name)}</td>
+            <td>${escapeHTML(row.user)}</td>
+            <td>${escapeHTML(row.reason)}</td>
           </tr>
         `).join("")}
       </tbody>
@@ -1632,11 +1715,6 @@ function generateTextsReport() {
 function createReportHeader(title) {
   return `
     <div class="report-header">
-      <div class="report-logo">
-        <img src="assets/favicon.png" alt="Logo Ascensão Lunar" onerror="this.style.display='none'; this.parentElement.classList.add('logo-fallback');" />
-        <span>🌙</span>
-      </div>
-
       <div>
         <h2>${escapeHTML(title)}</h2>
         <p>Ascensão Lunar • Gerado em ${new Date().toLocaleString("pt-BR")}</p>
@@ -1842,24 +1920,6 @@ function createTextItemHTML(text) {
   `;
 }
 
-function renderTextViewer(text) {
-  textViewer.innerHTML = `
-    <div class="viewer-title">${escapeHTML(text.title || "Sem título")}</div>
-
-    <div class="viewer-meta">
-      Autor: ${escapeHTML(text.memberName || "Não informado")} |
-      Tipo: ${escapeHTML(text.type || "")} |
-      Status: ${escapeHTML(text.status || "")}
-    </div>
-
-    <div class="viewer-content">${escapeHTML(text.content || "Sem conteúdo.")}</div>
-  `;
-}
-
-function resetTextViewer() {
-  textViewer.innerHTML = `<div class="empty-state">Selecione um texto para visualizar.</div>`;
-}
-
 /* PARSER */
 
 function parseMemberSheet(text) {
@@ -1888,9 +1948,7 @@ function getValueAfterLabel(text, labels) {
       const regex = new RegExp(`${escapeRegExp(label)}\\s*:?\\s*(.+)$`, "i");
       const match = cleaned.match(regex);
 
-      if (match) {
-        return match[1].trim();
-      }
+      if (match) return match[1].trim();
     }
   }
 
@@ -1906,9 +1964,7 @@ function getValueAfterQuestion(text, labels) {
       const regex = new RegExp(`${escapeRegExp(label)}\\s*:?\\s*(.*)$`, "i");
       const match = cleaned.match(regex);
 
-      if (match && match[1].trim()) {
-        return match[1].trim();
-      }
+      if (match && match[1].trim()) return match[1].trim();
     }
   }
 

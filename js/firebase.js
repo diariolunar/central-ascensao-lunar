@@ -16,44 +16,27 @@
    IMPORTA FIREBASE APP
 ========================= */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-
-/* =========================
-   IMPORTA AUTH
-========================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
   getAuth,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-
-/* =========================
-   IMPORTA FIRESTORE
-========================= */
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
   getFirestore,
-
   collection,
   addDoc,
   getDocs,
-
   doc,
   updateDoc,
   deleteDoc,
-
   query,
   orderBy,
-
   Timestamp
-
-} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-
-/* =========================
-   CONFIG FIREBASE
-========================= */
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBjZmPN2PheKgbG34dGmFR7j_rs5QZEUAg",
@@ -64,52 +47,24 @@ const firebaseConfig = {
   appId: "1:283153766319:web:7e255d8e6023f61f07815a"
 };
 
-/* =========================
-   INICIALIZA FIREBASE
-========================= */
-
 const app = initializeApp(firebaseConfig);
 
-/* =========================
-   AUTH
-========================= */
-
 const auth = getAuth(app);
-
-/* =========================
-   FIRESTORE DATABASE
-========================= */
-
 const db = getFirestore(app);
 
-/* =========================
-   EXPORTA TUDO
-========================= */
-
 export {
-
-  /* App */
-  app,
-
-  /* Auth */
   auth,
+  db,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-
-  /* Database */
-  db,
-
   collection,
   addDoc,
   getDocs,
-
   doc,
   updateDoc,
   deleteDoc,
-
   query,
   orderBy,
-
   Timestamp
 };
