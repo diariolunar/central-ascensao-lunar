@@ -6,6 +6,7 @@
 
   <title>Biblioteca Ascensão Lunar</title>
 
+  <link rel="icon" type="image/png" href="assets/img/logo.png" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 
@@ -14,18 +15,25 @@
   <main class="public-library-page">
 
     <header class="public-library-header">
-      <div class="public-logo">🌙</div>
+
+      <div class="public-logo">
+        <img src="assets/img/logo.png" alt="Logo Ascensão Lunar" />
+      </div>
 
       <div>
         <p class="eyebrow">Ascensão Lunar</p>
+
         <h1>Biblioteca de Textos</h1>
+
         <p>
           Espaço de leitura dos textos registrados no projeto.
         </p>
       </div>
+
     </header>
 
     <section class="public-library-toolbar">
+
       <input
         type="text"
         id="publicTextSearch"
@@ -40,6 +48,7 @@
         <option value="Cena">Cena</option>
         <option value="Outro">Outro</option>
       </select>
+
     </section>
 
     <section id="publicTextsList" class="public-texts-grid">
@@ -49,10 +58,13 @@
   </main>
 
   <div id="publicTextModal" class="modal hidden">
+
     <div class="modal-backdrop" data-close-modal="publicTextModal"></div>
 
     <div class="modal-card large-modal">
+
       <div class="modal-header">
+
         <div>
           <h2 id="publicTextModalTitle">Texto</h2>
           <p id="publicTextModalMeta"></p>
@@ -61,12 +73,16 @@
         <button class="modal-close" data-close-modal="publicTextModal">
           ×
         </button>
+
       </div>
 
-      <div id="publicTextModalContent" class="modal-content"></div>
+      <div id="publicTextModalContent" class="modal-content reading-modal-content"></div>
+
     </div>
+
   </div>
 
   <script type="module" src="js/biblioteca.js"></script>
+
 </body>
 </html>

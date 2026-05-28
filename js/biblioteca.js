@@ -27,11 +27,21 @@ async function init() {
   await loadTexts();
 }
 
+/* =========================================================
+   EVENTOS
+========================================================= */
+
 function setupModalEvents() {
   document.querySelectorAll("[data-close-modal]").forEach((button) => {
     button.addEventListener("click", () => {
       closeModal(button.dataset.closeModal);
     });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeModal("publicTextModal");
+    }
   });
 }
 
@@ -40,8 +50,18 @@ function setupFilters() {
   publicTextTypeFilter.addEventListener("change", renderTexts);
 }
 
+/* =========================================================
+   CARREGAMENTO DOS TEXTOS
+========================================================= */
+
 async function loadTexts() {
   try {
+    publicTextsList.innerHTML = `
+      <div class="empty-state">
+        Carregando biblioteca...
+      </div>
+    `;
+
     const q = query(
       collection(db, "texts"),
       orderBy("createdAt", "desc")
@@ -70,6 +90,10 @@ async function loadTexts() {
   }
 }
 
+/* =========================================================
+   RENDERIZAÇÃO
+========================================================= */
+
 function renderTexts() {
   const search = publicTextSearch.value
     .toLowerCase()
@@ -83,6 +107,7 @@ function renderTexts() {
       ${text.memberName || ""}
       ${text.type || ""}
       ${text.status || ""}
+      ${text.content || ""}
     `.toLowerCase();
 
     const matchesSearch = searchable.includes(search);
@@ -123,25 +148,6 @@ function attachCardEvents() {
   });
 }
 
-function openText(text) {
-  publicTextModalTitle.textContent =
-    text.title || "Sem título";
-
-  publicTextModalMeta.textContent = `
-${text.memberName || "Autor não informado"} •
-${text.type || "Texto"} •
-${text.status || "Sem status"}
-  `;
-
-  publicTextModalContent.innerHTML = `
-    <div class="viewer-content">
-      ${formatText(text.content || "Sem conteúdo.")}
-    </div>
-  `;
-
-  openModal("publicTextModal");
-}
-
 function createPublicTextCardHTML(text) {
   return `
     <article
@@ -176,15 +182,24 @@ function createPublicTextCardHTML(text) {
   `;
 }
 
-function createPreview(text) {
-  return String(text)
-    .replace(/\n/g, " ")
-    .slice(0, 240);
-}
+/* =========================================================
+   MODAL DE LEITURA
+========================================================= */
 
-function formatText(text) {
-  return escapeHTML(text)
-    .replace(/\n/g, "<br>");
+function openText(text) {
+  publicTextModalTitle.textContent =
+    text.title || "Sem título";
+
+  publicTextModalMeta.textContent =
+    `${text.memberName || "Autor não informado"} • ${text.type || "Texto"} • ${text.status || "Sem status"}`;
+
+  publicTextModalContent.innerHTML = `
+    <div class="viewer-content">
+      ${formatText(text.content || "Sem conteúdo.")}
+    </div>
+  `;
+
+  openModal("publicTextModal");
 }
 
 function openModal(id) {
@@ -203,10 +218,34 @@ function closeModal(id) {
   }
 }
 
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function createPreview(text) {
+  const cleanText = String(text)
+    .replace(/\n/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (cleanText.length <= 240) {
+    return cleanText;
+  }
+
+  return `${cleanText.slice(0, 240)}...`;
+}
+
+function formatText(text) {
+  return escapeHTML(text)
+    .replace(/\n/g, "<br>");
+}
+
 function getStatusClass(status) {
   if (status === "Comentado") return "green";
   if (status === "Lido") return "blue";
   if (status === "Pendente") return "purple";
+  if (status === "Revisado") return "green";
+  if (status === "Devolvido") return "red";
 
   return "";
 }

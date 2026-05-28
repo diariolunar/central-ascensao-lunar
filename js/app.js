@@ -31,6 +31,8 @@ let editingTextId = null;
 let currentActivityId = null;
 let currentReportCopyText = "";
 
+let confirmResolve = null;
+
 const loginForm = $("loginForm");
 const loginMessage = $("loginMessage");
 const loginScreen = $("loginScreen");
@@ -155,8 +157,104 @@ const reportArea = $("reportArea");
 const printReportBtn = $("printReportBtn");
 const copyReportBtn = $("copyReportBtn");
 
+const systemMessageModal = $("systemMessageModal");
+const systemMessageTitle = $("systemMessageTitle");
+const systemMessageText = $("systemMessageText");
+const systemMessageOkBtn = $("systemMessageOkBtn");
+
+const systemConfirmModal = $("systemConfirmModal");
+const systemConfirmTitle = $("systemConfirmTitle");
+const systemConfirmText = $("systemConfirmText");
+const systemConfirmCancelBtn = $("systemConfirmCancelBtn");
+const systemConfirmOkBtn = $("systemConfirmOkBtn");
+
+const systemLoadingModal = $("systemLoadingModal");
+const systemLoadingTitle = $("systemLoadingTitle");
+const systemLoadingText = $("systemLoadingText");
+
+/* =========================================================
+   SISTEMA DE MODAIS
+========================================================= */
+
+function openModal(id) {
+  const modal = $(id);
+
+  if (modal) {
+    modal.classList.remove("hidden");
+  }
+}
+
+function closeModal(id) {
+  const modal = $(id);
+
+  if (modal) {
+    modal.classList.add("hidden");
+  }
+}
+
+function showMessage(title, text) {
+  systemMessageTitle.textContent = title || "Aviso";
+  systemMessageText.textContent = text || "";
+  openModal("systemMessageModal");
+}
+
+function showLoading(title, text) {
+  systemLoadingTitle.textContent = title || "Processando...";
+  systemLoadingText.textContent = text || "Aguarde alguns instantes.";
+  openModal("systemLoadingModal");
+}
+
+function hideLoading() {
+  closeModal("systemLoadingModal");
+}
+
+function showConfirm(title, text) {
+  systemConfirmTitle.textContent = title || "Confirmar ação";
+  systemConfirmText.textContent = text || "";
+
+  openModal("systemConfirmModal");
+
+  return new Promise((resolve) => {
+    confirmResolve = resolve;
+  });
+}
+
+document.querySelectorAll("[data-close-modal]").forEach((button) => {
+  button.addEventListener("click", () => {
+    closeModal(button.dataset.closeModal);
+  });
+});
+
+systemMessageOkBtn.addEventListener("click", () => {
+  closeModal("systemMessageModal");
+});
+
+systemConfirmCancelBtn.addEventListener("click", () => {
+  closeModal("systemConfirmModal");
+
+  if (confirmResolve) {
+    confirmResolve(false);
+    confirmResolve = null;
+  }
+});
+
+systemConfirmOkBtn.addEventListener("click", () => {
+  closeModal("systemConfirmModal");
+
+  if (confirmResolve) {
+    confirmResolve(true);
+    confirmResolve = null;
+  }
+});
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+
+  showLoading("Entrando...", "Verificando suas credenciais.");
 
   try {
     await signInWithEmailAndPassword(
@@ -169,6 +267,8 @@ loginForm.addEventListener("submit", async (event) => {
   } catch (error) {
     console.error(error);
     loginMessage.textContent = "Erro ao entrar. Verifique e-mail e senha.";
+  } finally {
+    hideLoading();
   }
 });
 
@@ -176,7 +276,14 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     loginScreen.classList.add("hidden");
     mainApp.classList.remove("hidden");
-    await loadAllData();
+
+    showLoading("Carregando plataforma...", "Buscando dados salvos no Firebase.");
+
+    try {
+      await loadAllData();
+    } finally {
+      hideLoading();
+    }
   } else {
     loginScreen.classList.remove("hidden");
     mainApp.classList.add("hidden");
@@ -184,8 +291,25 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 logoutBtn.addEventListener("click", async () => {
-  await signOut(auth);
+  const confirmed = await showConfirm(
+    "Sair da plataforma",
+    "Deseja realmente sair da Central Ascensão Lunar?"
+  );
+
+  if (!confirmed) return;
+
+  showLoading("Saindo...", "Encerrando sua sessão.");
+
+  try {
+    await signOut(auth);
+  } finally {
+    hideLoading();
+  }
 });
+
+/* =========================================================
+   NAVEGAÇÃO
+========================================================= */
 
 menuButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -193,27 +317,14 @@ menuButtons.forEach((button) => {
   });
 });
 
-document.querySelectorAll("[data-close-modal]").forEach((button) => {
-  button.addEventListener("click", () => {
-    closeModal(button.dataset.closeModal);
-  });
-});
-
-async function loadAllData() {
-  await loadMembers();
-  await loadPoints();
-  await loadActivities();
-  await loadTexts();
-  await loadScoreTypes();
-  await loadResponsibles();
-  updateDashboard();
-}
-
 function showPage(pageId, title, subtitle) {
   pages.forEach((page) => page.classList.remove("active-page"));
 
   const page = $(pageId);
-  if (page) page.classList.add("active-page");
+
+  if (page) {
+    page.classList.add("active-page");
+  }
 
   menuButtons.forEach((button) => {
     button.classList.toggle("active", button.dataset.page === pageId);
@@ -223,17 +334,20 @@ function showPage(pageId, title, subtitle) {
   pageSubtitle.textContent = subtitle || "";
 }
 
-function openModal(id) {
-  const modal = $(id);
-  if (modal) modal.classList.remove("hidden");
+async function loadAllData() {
+  await loadMembers();
+  await loadPoints();
+  await loadActivities();
+  await loadTexts();
+  await loadScoreTypes();
+  await loadResponsibles();
+
+  updateDashboard();
 }
 
-function closeModal(id) {
-  const modal = $(id);
-  if (modal) modal.classList.add("hidden");
-}
-
-/* MEMBROS */
+/* =========================================================
+   MEMBROS
+========================================================= */
 
 memberForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -241,7 +355,7 @@ memberForm.addEventListener("submit", (event) => {
   const rawText = memberSheet.value.trim();
 
   if (!rawText) {
-    alert("Cole a ficha do membro.");
+    showMessage("Ficha vazia", "Cole a ficha do membro antes de reconhecer os dados.");
     return;
   }
 
@@ -252,11 +366,16 @@ memberForm.addEventListener("submit", (event) => {
 
 savePreviewMemberBtn.addEventListener("click", async () => {
   if (!pendingMember) {
-    alert("Reconheça uma ficha antes de salvar.");
+    showMessage("Nenhuma ficha reconhecida", "Reconheça uma ficha antes de salvar o membro.");
     return;
   }
 
   const memberData = getMemberDataFromParsedFields();
+
+  showLoading(
+    editingMemberId ? "Atualizando membro..." : "Salvando membro...",
+    "Aguarde enquanto os dados são enviados para o Firebase."
+  );
 
   try {
     if (editingMemberId) {
@@ -271,6 +390,8 @@ savePreviewMemberBtn.addEventListener("click", async () => {
 
       editingMemberId = null;
       savePreviewMemberBtn.textContent = "Salvar membro";
+
+      showMessage("Membro atualizado", "Os dados do membro foram atualizados com sucesso.");
     } else {
       await addDoc(collection(db, "members"), {
         ...memberData,
@@ -279,6 +400,8 @@ savePreviewMemberBtn.addEventListener("click", async () => {
         rawSheet: memberSheet.value.trim(),
         createdAt: Timestamp.now()
       });
+
+      showMessage("Membro salvo", "O membro foi cadastrado com sucesso.");
     }
 
     memberForm.reset();
@@ -290,7 +413,9 @@ savePreviewMemberBtn.addEventListener("click", async () => {
     showPage("membersPage", "Membros", "Controle completo dos membros.");
   } catch (error) {
     console.error(error);
-    alert("Erro ao salvar membro.");
+    showMessage("Erro ao salvar", "Não foi possível salvar o membro. Verifique o console.");
+  } finally {
+    hideLoading();
   }
 });
 
@@ -306,6 +431,7 @@ memberStatusFilter.addEventListener("change", renderMembers);
 
 membersList.addEventListener("click", async (event) => {
   const button = event.target.closest("button");
+
   if (!button) return;
 
   const action = button.dataset.action;
@@ -335,12 +461,27 @@ membersList.addEventListener("click", async (event) => {
   }
 
   if (action === "delete") {
-    const confirmed = confirm(`Excluir ${member.name}?`);
+    const confirmed = await showConfirm(
+      "Excluir membro",
+      `Deseja excluir ${member.name}? Esta ação não apaga automaticamente os registros de pontos já lançados.`
+    );
+
     if (!confirmed) return;
 
-    await deleteDoc(doc(db, "members", member.id));
-    await loadMembers();
-    updateDashboard();
+    showLoading("Excluindo membro...", "Removendo cadastro do Firebase.");
+
+    try {
+      await deleteDoc(doc(db, "members", member.id));
+      await loadMembers();
+      updateDashboard();
+
+      showMessage("Membro excluído", "O membro foi removido com sucesso.");
+    } catch (error) {
+      console.error(error);
+      showMessage("Erro ao excluir", "Não foi possível excluir o membro.");
+    } finally {
+      hideLoading();
+    }
   }
 });
 
@@ -350,20 +491,32 @@ internalNotesForm.addEventListener("submit", async (event) => {
   const memberId = internalNotesMemberId.value;
 
   if (!memberId) {
-    alert("Nenhum membro selecionado.");
+    showMessage("Nenhum membro selecionado", "Abra o perfil de um membro antes de salvar observações.");
     return;
   }
 
-  await updateDoc(doc(db, "members", memberId), {
-    internalNotes: internalNotesText.value.trim()
-  });
+  showLoading("Salvando observações...", "Atualizando as anotações internas.");
 
-  await loadMembers();
+  try {
+    await updateDoc(doc(db, "members", memberId), {
+      internalNotes: internalNotesText.value.trim()
+    });
 
-  const updatedMember = allMembers.find((member) => member.id === memberId);
-  if (updatedMember) openMemberProfile(updatedMember);
+    await loadMembers();
 
-  alert("Observações internas salvas.");
+    const updatedMember = allMembers.find((member) => member.id === memberId);
+
+    if (updatedMember) {
+      openMemberProfile(updatedMember);
+    }
+
+    showMessage("Observações salvas", "As observações internas foram salvas com sucesso.");
+  } catch (error) {
+    console.error(error);
+    showMessage("Erro ao salvar", "Não foi possível salvar as observações internas.");
+  } finally {
+    hideLoading();
+  }
 });
 
 async function loadMembers() {
@@ -437,7 +590,9 @@ function openMemberProfile(member) {
   showPage("memberProfilePage", "Perfil do membro", "Informações completas e observações internas.");
 }
 
-/* PONTUAÇÕES */
+/* =========================================================
+   PONTUAÇÕES
+========================================================= */
 
 pointsType.addEventListener("change", () => {
   const selected = allScoreTypes.find((type) => type.id === pointsType.value);
@@ -454,30 +609,41 @@ pointsForm.addEventListener("submit", async (event) => {
   const member = allMembers.find((item) => item.id === pointsMember.value);
 
   if (!member) {
-    alert("Selecione um membro válido.");
+    showMessage("Membro obrigatório", "Selecione um membro válido.");
     return;
   }
 
   if (!pointsResponsible.value) {
-    alert("Selecione um responsável.");
+    showMessage("Responsável obrigatório", "Selecione um responsável pelo lançamento.");
     return;
   }
 
-  await addPointToMember({
-    member,
-    value: Number(pointsValue.value),
-    reason: pointsReason.value,
-    date: pointsDate.value,
-    responsible: pointsResponsible.value,
-    origin: "manual"
-  });
+  showLoading("Salvando pontuação...", "Registrando movimentação e atualizando pontos do membro.");
 
-  pointsForm.reset();
+  try {
+    await addPointToMember({
+      member,
+      value: Number(pointsValue.value),
+      reason: pointsReason.value,
+      date: pointsDate.value,
+      responsible: pointsResponsible.value,
+      origin: "manual"
+    });
 
-  await loadMembers();
-  await loadPoints();
+    pointsForm.reset();
 
-  updateDashboard();
+    await loadMembers();
+    await loadPoints();
+
+    updateDashboard();
+
+    showMessage("Pontuação salva", "A pontuação foi registrada com sucesso.");
+  } catch (error) {
+    console.error(error);
+    showMessage("Erro ao pontuar", "Não foi possível salvar a pontuação.");
+  } finally {
+    hideLoading();
+  }
 });
 
 async function addPointToMember({ member, value, reason, date, responsible, origin }) {
@@ -519,6 +685,7 @@ async function loadPoints() {
     total += Number(point.value || 0);
 
     const html = createPointHistoryHTML(point);
+
     pointsHistory.innerHTML += html;
 
     if (movementCount < 5) {
@@ -536,17 +703,21 @@ async function loadPoints() {
 }
 
 clearPointsBtn.addEventListener("click", async () => {
-  const firstConfirm = confirm(
+  const firstConfirm = await showConfirm(
+    "Limpar pontuações",
     "Esta ação vai apagar TODOS os registros de pontuação e zerar os pontos de TODOS os membros. Deseja continuar?"
   );
 
   if (!firstConfirm) return;
 
-  const secondConfirm = confirm(
+  const secondConfirm = await showConfirm(
+    "Confirmação final",
     "Confirma novamente? Esta ação não pode ser desfeita sem backup."
   );
 
   if (!secondConfirm) return;
+
+  showLoading("Limpando pontuações...", "Apagando registros e zerando pontos dos membros.");
 
   try {
     clearPointsMessage.textContent = "Limpando registros...";
@@ -570,13 +741,20 @@ clearPointsBtn.addEventListener("click", async () => {
 
     updateDashboard();
     renderGeneralRanking();
+
+    showMessage("Pontuações limpas", "Os registros foram apagados e os membros foram zerados.");
   } catch (error) {
     console.error(error);
     clearPointsMessage.textContent = "Erro ao limpar registros de pontuação.";
+    showMessage("Erro ao limpar", "Não foi possível limpar os registros de pontuação.");
+  } finally {
+    hideLoading();
   }
 });
 
-/* RANKINGS */
+/* =========================================================
+   RANKINGS
+========================================================= */
 
 rankingForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -595,7 +773,10 @@ function generateQuinzenalRanking() {
 
   allPoints.forEach((point) => {
     if (point.date >= start && point.date <= end) {
-      if (!rankingMap[point.memberId]) rankingMap[point.memberId] = 0;
+      if (!rankingMap[point.memberId]) {
+        rankingMap[point.memberId] = 0;
+      }
+
       rankingMap[point.memberId] += Number(point.value || 0);
     }
   });
@@ -677,7 +858,9 @@ function createRankingItemHTML(item, index) {
   `;
 }
 
-/* ATIVIDADES */
+/* =========================================================
+   ATIVIDADES
+========================================================= */
 
 openCreateActivityModalBtn.addEventListener("click", () => {
   editingActivityId = null;
@@ -698,6 +881,11 @@ activityForm.addEventListener("submit", async (event) => {
     status: activityStatus.value
   };
 
+  showLoading(
+    editingActivityId ? "Atualizando atividade..." : "Salvando atividade...",
+    "Aguarde enquanto a atividade é salva."
+  );
+
   try {
     if (editingActivityId) {
       const oldActivity = allActivities.find((item) => item.id === editingActivityId);
@@ -710,6 +898,8 @@ activityForm.addEventListener("submit", async (event) => {
       });
 
       editingActivityId = null;
+
+      showMessage("Atividade atualizada", "A atividade foi atualizada com sucesso.");
     } else {
       await addDoc(collection(db, "activities"), {
         ...activityData,
@@ -717,6 +907,8 @@ activityForm.addEventListener("submit", async (event) => {
         winner: null,
         createdAt: Timestamp.now()
       });
+
+      showMessage("Atividade salva", "A atividade foi cadastrada com sucesso.");
     }
 
     activityForm.reset();
@@ -727,12 +919,15 @@ activityForm.addEventListener("submit", async (event) => {
     updateDashboard();
   } catch (error) {
     console.error(error);
-    alert("Erro ao salvar atividade.");
+    showMessage("Erro ao salvar", "Não foi possível salvar a atividade.");
+  } finally {
+    hideLoading();
   }
 });
 
 activitiesList.addEventListener("click", (event) => {
   const card = event.target.closest(".activity-simple-card");
+
   if (!card) return;
 
   openActivityDetail(card.dataset.id);
@@ -773,56 +968,72 @@ activityDeliveryForm.addEventListener("submit", async (event) => {
   const member = allMembers.find((item) => item.id === deliveryMember.value);
 
   if (!activity || !member) {
-    alert("Selecione uma atividade e um membro.");
+    showMessage("Dados incompletos", "Selecione uma atividade e um membro.");
     return;
   }
 
   const deliveries = [...(activity.deliveries || [])];
   const editingId = editingDeliveryId.value;
 
-  if (editingId) {
-    const delivery = deliveries.find((item) => item.id === editingId);
+  showLoading(
+    editingId ? "Atualizando entrega..." : "Registrando entrega...",
+    "Aguarde enquanto salvamos as informações."
+  );
 
-    if (delivery) {
-      delivery.text = deliveryText.value;
-      delivery.updatedAt = new Date().toISOString();
+  try {
+    if (editingId) {
+      const delivery = deliveries.find((item) => item.id === editingId);
+
+      if (delivery) {
+        delivery.text = deliveryText.value;
+        delivery.updatedAt = new Date().toISOString();
+      }
+
+      editingDeliveryId.value = "";
+      saveDeliveryBtn.textContent = "Registrar entrega";
+    } else {
+      const alreadyDelivered = deliveries.some((item) => item.memberId === member.id);
+
+      if (alreadyDelivered) {
+        hideLoading();
+        showMessage("Entrega já registrada", "Esse membro já tem uma entrega registrada nessa atividade.");
+        return;
+      }
+
+      deliveries.push({
+        id: crypto.randomUUID(),
+        memberId: member.id,
+        memberName: member.name || "",
+        memberUser: member.wattpad || member.user || "",
+        text: deliveryText.value,
+        date: new Date().toISOString().slice(0, 10),
+        pointsGiven: false,
+        winnerPointsGiven: false
+      });
     }
 
-    editingDeliveryId.value = "";
-    saveDeliveryBtn.textContent = "Registrar entrega";
-  } else {
-    const alreadyDelivered = deliveries.some((item) => item.memberId === member.id);
+    await updateDoc(doc(db, "activities", activity.id), { deliveries });
 
-    if (alreadyDelivered) {
-      alert("Esse membro já tem uma entrega registrada nessa atividade.");
-      return;
-    }
+    activityDeliveryForm.reset();
+    closeModal("deliveryModal");
 
-    deliveries.push({
-      id: crypto.randomUUID(),
-      memberId: member.id,
-      memberName: member.name || "",
-      memberUser: member.wattpad || member.user || "",
-      text: deliveryText.value,
-      date: new Date().toISOString().slice(0, 10),
-      pointsGiven: false,
-      winnerPointsGiven: false
-    });
+    await loadActivities();
+    openActivityDetail(activity.id);
+
+    showMessage("Entrega salva", editingId ? "A entrega foi atualizada." : "A entrega foi registrada com sucesso.");
+  } catch (error) {
+    console.error(error);
+    showMessage("Erro ao salvar", "Não foi possível salvar a entrega.");
+  } finally {
+    hideLoading();
   }
-
-  await updateDoc(doc(db, "activities", activity.id), { deliveries });
-
-  activityDeliveryForm.reset();
-  closeModal("deliveryModal");
-
-  await loadActivities();
-  openActivityDetail(activity.id);
 });
 
 activityWinnerForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const activity = allActivities.find((item) => item.id === winnerActivityId.value);
+
   if (!activity) return;
 
   const delivery = (activity.deliveries || []).find(
@@ -830,46 +1041,69 @@ activityWinnerForm.addEventListener("submit", async (event) => {
   );
 
   if (!delivery) {
-    alert("Selecione um vencedor válido.");
+    showMessage("Vencedor inválido", "Selecione um vencedor entre os membros que entregaram a atividade.");
     return;
   }
 
-  await updateDoc(doc(db, "activities", activity.id), {
-    winner: {
-      memberId: delivery.memberId,
-      name: delivery.memberName
-    }
-  });
+  showLoading("Salvando vencedor...", "Registrando vencedor do desafio.");
 
-  await loadActivities();
-  openActivityDetail(activity.id);
+  try {
+    await updateDoc(doc(db, "activities", activity.id), {
+      winner: {
+        memberId: delivery.memberId,
+        name: delivery.memberName
+      }
+    });
 
-  alert("Vencedor salvo.");
+    await loadActivities();
+    openActivityDetail(activity.id);
+
+    showMessage("Vencedor salvo", "O vencedor foi salvo com sucesso.");
+  } catch (error) {
+    console.error(error);
+    showMessage("Erro ao salvar vencedor", "Não foi possível salvar o vencedor.");
+  } finally {
+    hideLoading();
+  }
 });
 
 completeActivityBtn.addEventListener("click", async () => {
   if (!currentActivityId) return;
 
   const activity = allActivities.find((item) => item.id === currentActivityId);
+
   if (!activity) return;
 
-  const confirmed = confirm("Concluir este desafio?");
+  const confirmed = await showConfirm(
+    "Concluir desafio",
+    "Deseja concluir este desafio? O status será alterado para Encerrada."
+  );
 
   if (!confirmed) return;
 
-  await updateDoc(doc(db, "activities", activity.id), {
-    status: "Encerrada"
-  });
+  showLoading("Concluindo desafio...", "Atualizando status da atividade.");
 
-  await loadActivities();
-  openActivityDetail(activity.id);
-  updateDashboard();
+  try {
+    await updateDoc(doc(db, "activities", activity.id), {
+      status: "Encerrada"
+    });
 
-  alert("Desafio concluído.");
+    await loadActivities();
+    openActivityDetail(activity.id);
+    updateDashboard();
+
+    showMessage("Desafio concluído", "O desafio foi encerrado com sucesso.");
+  } catch (error) {
+    console.error(error);
+    showMessage("Erro ao concluir", "Não foi possível concluir o desafio.");
+  } finally {
+    hideLoading();
+  }
 });
 
 editCurrentActivityBtn.addEventListener("click", () => {
   const activity = allActivities.find((item) => item.id === currentActivityId);
+
   if (!activity) return;
 
   editingActivityId = activity.id;
@@ -886,20 +1120,35 @@ editCurrentActivityBtn.addEventListener("click", () => {
 
 deleteCurrentActivityBtn.addEventListener("click", async () => {
   const activity = allActivities.find((item) => item.id === currentActivityId);
+
   if (!activity) return;
 
-  const confirmed = confirm(`Excluir atividade "${activity.title}"?`);
+  const confirmed = await showConfirm(
+    "Excluir atividade",
+    `Deseja excluir a atividade "${activity.title}"? Esta ação não pode ser desfeita.`
+  );
 
   if (!confirmed) return;
 
-  await deleteDoc(doc(db, "activities", activity.id));
+  showLoading("Excluindo atividade...", "Removendo atividade do Firebase.");
 
-  currentActivityId = null;
+  try {
+    await deleteDoc(doc(db, "activities", activity.id));
 
-  await loadActivities();
-  updateDashboard();
+    currentActivityId = null;
 
-  showPage("activitiesPage", "Atividades", "Controle de atividades.");
+    await loadActivities();
+    updateDashboard();
+
+    showPage("activitiesPage", "Atividades", "Controle de atividades.");
+
+    showMessage("Atividade excluída", "A atividade foi removida com sucesso.");
+  } catch (error) {
+    console.error(error);
+    showMessage("Erro ao excluir", "Não foi possível excluir a atividade.");
+  } finally {
+    hideLoading();
+  }
 });
 
 async function loadActivities() {
@@ -919,7 +1168,9 @@ async function loadActivities() {
 
     allActivities.push(activity);
 
-    if (activity.status === "Aberta") totalOpen++;
+    if (activity.status === "Aberta") {
+      totalOpen++;
+    }
 
     activitiesList.innerHTML += createActivitySimpleCardHTML(activity);
   });
@@ -974,10 +1225,11 @@ function renderActivityDetail(activity) {
       <div class="activity-hero-top">
         <div>
           <h1 class="activity-hero-title">${escapeHTML(activity.title || "Sem título")}</h1>
+
+          <div class="activity-status-badge">${escapeHTML(activity.status || "Aberta")}</div>
+
           <p class="activity-hero-description">${escapeHTML(activity.description || "Sem descrição.")}</p>
         </div>
-
-        <div class="activity-status-badge">${escapeHTML(activity.status || "Aberta")}</div>
       </div>
 
       <div class="activity-info-grid">
@@ -1018,6 +1270,7 @@ function renderActivityDetail(activity) {
 
 function renderDeliveriesPage(activityId) {
   const activity = allActivities.find((item) => item.id === activityId);
+
   if (!activity) return;
 
   const deliveries = activity.deliveries || [];
@@ -1094,9 +1347,11 @@ deliveriesList.addEventListener("click", async (event) => {
   const deliveryId = button.dataset.delivery;
 
   const activity = allActivities.find((item) => item.id === activityId);
+
   if (!activity) return;
 
   const delivery = (activity.deliveries || []).find((item) => item.id === deliveryId);
+
   if (!delivery) return;
 
   if (action === "view-delivery") {
@@ -1116,20 +1371,36 @@ deliveriesList.addEventListener("click", async (event) => {
   }
 
   if (action === "delete-delivery") {
-    const confirmed = confirm("Excluir esta entrega?");
+    const confirmed = await showConfirm(
+      "Excluir entrega",
+      "Deseja excluir esta entrega?"
+    );
 
     if (!confirmed) return;
 
-    const deliveries = (activity.deliveries || []).filter((item) => item.id !== deliveryId);
+    showLoading("Excluindo entrega...", "Atualizando entregas da atividade.");
 
-    await updateDoc(doc(db, "activities", activity.id), { deliveries });
+    try {
+      const deliveries = (activity.deliveries || []).filter((item) => item.id !== deliveryId);
 
-    await loadActivities();
-    renderDeliveriesPage(activity.id);
+      await updateDoc(doc(db, "activities", activity.id), { deliveries });
+
+      await loadActivities();
+      renderDeliveriesPage(activity.id);
+
+      showMessage("Entrega excluída", "A entrega foi removida com sucesso.");
+    } catch (error) {
+      console.error(error);
+      showMessage("Erro ao excluir", "Não foi possível excluir a entrega.");
+    } finally {
+      hideLoading();
+    }
   }
 });
 
-/* TEXTOS */
+/* =========================================================
+   TEXTOS
+========================================================= */
 
 openCreateTextModalBtn.addEventListener("click", () => {
   editingTextId = null;
@@ -1151,6 +1422,11 @@ textForm.addEventListener("submit", async (event) => {
     status: textStatus.value
   };
 
+  showLoading(
+    editingTextId ? "Atualizando texto..." : "Salvando texto...",
+    "Aguarde enquanto o texto é salvo."
+  );
+
   try {
     if (editingTextId) {
       const oldText = allTexts.find((item) => item.id === editingTextId);
@@ -1161,11 +1437,15 @@ textForm.addEventListener("submit", async (event) => {
       });
 
       editingTextId = null;
+
+      showMessage("Texto atualizado", "O texto foi atualizado com sucesso.");
     } else {
       await addDoc(collection(db, "texts"), {
         ...textData,
         createdAt: Timestamp.now()
       });
+
+      showMessage("Texto salvo", "O texto foi registrado na biblioteca.");
     }
 
     textForm.reset();
@@ -1175,7 +1455,9 @@ textForm.addEventListener("submit", async (event) => {
     updateDashboard();
   } catch (error) {
     console.error(error);
-    alert("Erro ao salvar texto.");
+    showMessage("Erro ao salvar", "Não foi possível salvar o texto.");
+  } finally {
+    hideLoading();
   }
 });
 
@@ -1203,13 +1485,27 @@ textsList.addEventListener("click", async (event) => {
     }
 
     if (action === "delete-text") {
-      const confirmed = confirm(`Excluir texto "${text.title}"?`);
+      const confirmed = await showConfirm(
+        "Excluir texto",
+        `Deseja excluir o texto "${text.title}"?`
+      );
 
       if (!confirmed) return;
 
-      await deleteDoc(doc(db, "texts", textId));
-      await loadTexts();
-      updateDashboard();
+      showLoading("Excluindo texto...", "Removendo texto da biblioteca.");
+
+      try {
+        await deleteDoc(doc(db, "texts", textId));
+        await loadTexts();
+        updateDashboard();
+
+        showMessage("Texto excluído", "O texto foi removido com sucesso.");
+      } catch (error) {
+        console.error(error);
+        showMessage("Erro ao excluir", "Não foi possível excluir o texto.");
+      } finally {
+        hideLoading();
+      }
     }
 
     return;
@@ -1252,19 +1548,32 @@ async function loadTexts() {
   totalTexts.textContent = allTexts.length;
 }
 
-/* CONFIGURAÇÕES */
+/* =========================================================
+   CONFIGURAÇÕES
+========================================================= */
 
 scoreTypeForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  await addDoc(collection(db, "scoreTypes"), {
-    name: scoreTypeName.value,
-    value: Number(scoreTypeValue.value || 0),
-    createdAt: Timestamp.now()
-  });
+  showLoading("Salvando tipo...", "Registrando novo tipo de pontuação.");
 
-  scoreTypeForm.reset();
-  await loadScoreTypes();
+  try {
+    await addDoc(collection(db, "scoreTypes"), {
+      name: scoreTypeName.value,
+      value: Number(scoreTypeValue.value || 0),
+      createdAt: Timestamp.now()
+    });
+
+    scoreTypeForm.reset();
+    await loadScoreTypes();
+
+    showMessage("Tipo salvo", "O tipo de pontuação foi cadastrado.");
+  } catch (error) {
+    console.error(error);
+    showMessage("Erro ao salvar", "Não foi possível salvar o tipo de pontuação.");
+  } finally {
+    hideLoading();
+  }
 });
 
 scoreTypesList.addEventListener("click", async (event) => {
@@ -1272,11 +1581,26 @@ scoreTypesList.addEventListener("click", async (event) => {
 
   if (!button) return;
 
-  const confirmed = confirm("Excluir este tipo de pontuação?");
+  const confirmed = await showConfirm(
+    "Excluir tipo de pontuação",
+    "Deseja excluir este tipo de pontuação?"
+  );
+
   if (!confirmed) return;
 
-  await deleteDoc(doc(db, "scoreTypes", button.dataset.id));
-  await loadScoreTypes();
+  showLoading("Excluindo tipo...", "Removendo tipo de pontuação.");
+
+  try {
+    await deleteDoc(doc(db, "scoreTypes", button.dataset.id));
+    await loadScoreTypes();
+
+    showMessage("Tipo excluído", "O tipo de pontuação foi removido.");
+  } catch (error) {
+    console.error(error);
+    showMessage("Erro ao excluir", "Não foi possível excluir o tipo de pontuação.");
+  } finally {
+    hideLoading();
+  }
 });
 
 async function loadScoreTypes() {
@@ -1319,13 +1643,24 @@ async function loadScoreTypes() {
 responsibleForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  await addDoc(collection(db, "responsibles"), {
-    name: responsibleName.value,
-    createdAt: Timestamp.now()
-  });
+  showLoading("Salvando responsável...", "Registrando responsável.");
 
-  responsibleForm.reset();
-  await loadResponsibles();
+  try {
+    await addDoc(collection(db, "responsibles"), {
+      name: responsibleName.value,
+      createdAt: Timestamp.now()
+    });
+
+    responsibleForm.reset();
+    await loadResponsibles();
+
+    showMessage("Responsável salvo", "O responsável foi cadastrado.");
+  } catch (error) {
+    console.error(error);
+    showMessage("Erro ao salvar", "Não foi possível salvar o responsável.");
+  } finally {
+    hideLoading();
+  }
 });
 
 responsiblesList.addEventListener("click", async (event) => {
@@ -1333,11 +1668,26 @@ responsiblesList.addEventListener("click", async (event) => {
 
   if (!button) return;
 
-  const confirmed = confirm("Excluir este responsável?");
+  const confirmed = await showConfirm(
+    "Excluir responsável",
+    "Deseja excluir este responsável?"
+  );
+
   if (!confirmed) return;
 
-  await deleteDoc(doc(db, "responsibles", button.dataset.id));
-  await loadResponsibles();
+  showLoading("Excluindo responsável...", "Removendo responsável.");
+
+  try {
+    await deleteDoc(doc(db, "responsibles", button.dataset.id));
+    await loadResponsibles();
+
+    showMessage("Responsável excluído", "O responsável foi removido.");
+  } catch (error) {
+    console.error(error);
+    showMessage("Erro ao excluir", "Não foi possível excluir o responsável.");
+  } finally {
+    hideLoading();
+  }
 });
 
 async function loadResponsibles() {
@@ -1377,7 +1727,9 @@ async function loadResponsibles() {
   }
 }
 
-/* BACKUP */
+/* =========================================================
+   BACKUP
+========================================================= */
 
 exportBackupBtn.addEventListener("click", () => {
   const backup = {
@@ -1403,6 +1755,8 @@ exportBackupBtn.addEventListener("click", () => {
   link.click();
 
   URL.revokeObjectURL(url);
+
+  showMessage("Backup exportado", "O arquivo JSON do backup foi gerado.");
 });
 
 importBackupInput.addEventListener("change", async (event) => {
@@ -1410,11 +1764,14 @@ importBackupInput.addEventListener("change", async (event) => {
 
   if (!file) return;
 
-  const confirmed = confirm(
-    "Importar backup adicionará os dados ao Firebase. Isso pode duplicar registros. Continuar?"
+  const confirmed = await showConfirm(
+    "Importar backup",
+    "Importar backup adicionará os dados ao Firebase e pode duplicar registros. Continuar?"
   );
 
   if (!confirmed) return;
+
+  showLoading("Importando backup...", "Esse processo pode demorar alguns segundos.");
 
   try {
     const text = await file.text();
@@ -1430,9 +1787,14 @@ importBackupInput.addEventListener("change", async (event) => {
     backupMessage.textContent = "Backup importado com sucesso.";
 
     await loadAllData();
+
+    showMessage("Backup importado", "Os dados foram importados com sucesso.");
   } catch (error) {
     console.error(error);
     backupMessage.textContent = "Erro ao importar backup.";
+    showMessage("Erro ao importar", "Não foi possível importar o backup.");
+  } finally {
+    hideLoading();
   }
 });
 
@@ -1449,7 +1811,9 @@ async function importCollectionBackup(collectionName, items) {
   }
 }
 
-/* RELATÓRIOS */
+/* =========================================================
+   RELATÓRIOS
+========================================================= */
 
 reportForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -1467,12 +1831,12 @@ reportForm.addEventListener("submit", (event) => {
 
 copyReportBtn.addEventListener("click", async () => {
   if (!currentReportCopyText) {
-    alert("Gere um relatório primeiro.");
+    showMessage("Nenhum relatório", "Gere um relatório primeiro.");
     return;
   }
 
   await navigator.clipboard.writeText(currentReportCopyText);
-  alert("Relatório copiado.");
+  showMessage("Relatório copiado", "O relatório foi copiado para a área de transferência.");
 });
 
 printReportBtn.addEventListener("click", () => {
@@ -1723,7 +2087,9 @@ function createReportHeader(title) {
   `;
 }
 
-/* HTML DINÂMICO */
+/* =========================================================
+   HTML DINÂMICO
+========================================================= */
 
 function createParsedMemberFormHTML(member) {
   return `
@@ -1920,7 +2286,9 @@ function createTextItemHTML(text) {
   `;
 }
 
-/* PARSER */
+/* =========================================================
+   PARSER
+========================================================= */
 
 function parseMemberSheet(text) {
   return {
@@ -2018,7 +2386,9 @@ function normalizeOldMember(member) {
   };
 }
 
-/* AUXILIARES */
+/* =========================================================
+   AUXILIARES
+========================================================= */
 
 function updateDashboard() {
   const sortedMembers = [...allMembers].sort(

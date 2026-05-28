@@ -6,6 +6,7 @@
 
   <title>Central Ascensão Lunar</title>
 
+  <link rel="icon" type="image/png" href="assets/img/logo.png" />
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 
@@ -17,7 +18,7 @@
     <div class="login-card">
 
       <div class="login-logo">
-        🌙
+        <img src="assets/img/logo.png" alt="Logo Ascensão Lunar" />
       </div>
 
       <h1>Central Ascensão Lunar</h1>
@@ -28,10 +29,10 @@
 
       <form id="loginForm" class="form">
 
-        <label>E-mail</label>
+        <label for="loginEmail">E-mail</label>
         <input type="email" id="loginEmail" required />
 
-        <label>Senha</label>
+        <label for="loginPassword">Senha</label>
         <input type="password" id="loginPassword" required />
 
         <button type="submit" class="btn btn-primary">
@@ -56,7 +57,7 @@
       <div class="sidebar-top">
 
         <div class="sidebar-logo">
-          🌙
+          <img src="assets/img/logo.png" alt="Logo Ascensão Lunar" />
         </div>
 
         <div>
@@ -74,7 +75,7 @@
           data-title="Início"
           data-subtitle="Visão geral da plataforma."
         >
-          ☾ Início
+          <span>☾</span> Início
         </button>
 
         <button
@@ -83,7 +84,7 @@
           data-title="Membros"
           data-subtitle="Controle completo dos membros."
         >
-          👥 Membros
+          <span>👥</span> Membros
         </button>
 
         <button
@@ -92,7 +93,7 @@
           data-title="Cadastro"
           data-subtitle="Cadastro de novos membros."
         >
-          📝 Cadastro
+          <span>📝</span> Cadastro
         </button>
 
         <button
@@ -101,7 +102,7 @@
           data-title="Pontuações"
           data-subtitle="Gerencie pontuações."
         >
-          ⭐ Pontuações
+          <span>⭐</span> Pontuações
         </button>
 
         <button
@@ -110,7 +111,7 @@
           data-title="Rankings"
           data-subtitle="Rankings gerais e quinzenais."
         >
-          🏆 Rankings
+          <span>🏆</span> Rankings
         </button>
 
         <button
@@ -119,7 +120,7 @@
           data-title="Atividades"
           data-subtitle="Controle de atividades."
         >
-          📌 Atividades
+          <span>📌</span> Atividades
         </button>
 
         <button
@@ -128,7 +129,7 @@
           data-title="Biblioteca"
           data-subtitle="Biblioteca de textos."
         >
-          📚 Biblioteca
+          <span>📚</span> Biblioteca
         </button>
 
         <button
@@ -137,7 +138,7 @@
           data-title="Relatórios"
           data-subtitle="Relatórios do sistema."
         >
-          🖨️ Relatórios
+          <span>🖨️</span> Relatórios
         </button>
 
         <button
@@ -146,12 +147,12 @@
           data-title="Configurações"
           data-subtitle="Configurações gerais."
         >
-          ⚙️ Configurações
+          <span>⚙️</span> Configurações
         </button>
 
       </nav>
 
-      <button id="logoutBtn" class="btn btn-danger full-btn">
+      <button id="logoutBtn" class="btn btn-danger full-btn logout-button">
         Sair
       </button>
 
@@ -215,6 +216,7 @@
             <div class="section-title-row">
               <div>
                 <h2>Últimas movimentações</h2>
+                <p class="hint">Registros recentes de pontuação.</p>
               </div>
             </div>
 
@@ -225,6 +227,7 @@
             <div class="section-title-row">
               <div>
                 <h2>Resumo rápido</h2>
+                <p class="hint">Indicadores principais do sistema.</p>
               </div>
             </div>
 
@@ -269,6 +272,7 @@
 
             <div>
               <h2>Membros</h2>
+              <p class="hint">Controle completo dos membros cadastrados.</p>
             </div>
 
             <span id="membersCount" class="count-pill">
@@ -314,11 +318,13 @@
             <div class="section-title-row">
               <div>
                 <h2>Cadastro por ficha</h2>
+                <p class="hint">Cole a ficha preenchida pelo membro para reconhecer os dados.</p>
               </div>
             </div>
 
             <form id="memberForm" class="form">
 
+              <label for="memberSheet">Ficha do membro</label>
               <textarea
                 id="memberSheet"
                 rows="20"
@@ -351,6 +357,7 @@
             <div class="section-title-row">
               <div>
                 <h2>Campos reconhecidos</h2>
+                <p class="hint">Revise antes de salvar.</p>
               </div>
             </div>
 
@@ -396,11 +403,13 @@
           <aside class="profile-side panel">
 
             <h2>Observações internas</h2>
+            <p class="hint">Anotações privadas sobre o membro.</p>
 
             <form id="internalNotesForm" class="form">
 
               <input type="hidden" id="internalNotesMemberId"/>
 
+              <label for="internalNotesText">Observações</label>
               <textarea
                 id="internalNotesText"
                 rows="12"
@@ -427,29 +436,30 @@
           <div class="panel">
 
             <h2>Lançar pontuação</h2>
+            <p class="hint">Adicione ou remova pontos de um membro.</p>
 
             <form id="pointsForm" class="form">
 
-              <label>Membro</label>
+              <label for="pointsMember">Membro</label>
               <select id="pointsMember"></select>
 
-              <label>Tipo</label>
+              <label for="pointsType">Tipo</label>
               <select id="pointsType">
                 <option value="">
                   Selecionar manualmente
                 </option>
               </select>
 
-              <label>Pontos</label>
+              <label for="pointsValue">Pontos</label>
               <input type="number" id="pointsValue"/>
 
-              <label>Motivo</label>
+              <label for="pointsReason">Motivo</label>
               <input type="text" id="pointsReason"/>
 
-              <label>Data</label>
+              <label for="pointsDate">Data</label>
               <input type="date" id="pointsDate"/>
 
-              <label>Responsável</label>
+              <label for="pointsResponsible">Responsável</label>
               <select id="pointsResponsible">
                 <option value="">
                   Selecione
@@ -467,6 +477,7 @@
           <div class="panel">
 
             <h2>Histórico</h2>
+            <p class="hint">Últimos registros de pontuação.</p>
 
             <div id="pointsHistory" class="list compact-list"></div>
 
@@ -480,19 +491,24 @@
 
       <section id="rankingPage" class="page">
 
-        <div class="panel">
+        <div class="panel ranking-period-panel">
 
-          <h2>Ranking quinzenal</h2>
-
-          <form id="rankingForm" class="form inline-form">
-
+          <div class="panel-header">
             <div>
-              <label>Início</label>
+              <h2>Ranking quinzenal</h2>
+              <p class="hint">Escolha o período para gerar o ranking.</p>
+            </div>
+          </div>
+
+          <form id="rankingForm" class="ranking-form">
+
+            <div class="form-group">
+              <label for="rankingStart">Início</label>
               <input type="date" id="rankingStart"/>
             </div>
 
-            <div>
-              <label>Fim</label>
+            <div class="form-group">
+              <label for="rankingEnd">Fim</label>
               <input type="date" id="rankingEnd"/>
             </div>
 
@@ -526,6 +542,7 @@
 
             <div>
               <h2>Ranking geral</h2>
+              <p class="hint">Ranking acumulado de todos os membros.</p>
             </div>
 
             <button
@@ -553,6 +570,7 @@
 
             <div>
               <h2>Atividades</h2>
+              <p class="hint">Clique em uma atividade para abrir os detalhes.</p>
             </div>
 
             <button
@@ -592,12 +610,13 @@
           <aside class="activity-detail-side panel">
 
             <h2>Controle do desafio</h2>
+            <p class="hint">Gerencie vencedor, entregas e status do desafio.</p>
 
             <form id="activityWinnerForm" class="form">
 
               <input type="hidden" id="winnerActivityId"/>
 
-              <label>Vencedor</label>
+              <label for="activityWinnerSelect">Vencedor</label>
 
               <select id="activityWinnerSelect">
                 <option value="">
@@ -611,40 +630,44 @@
 
             </form>
 
-            <button
-              id="openDeliveryModalBtn"
-              class="btn btn-primary full-btn"
-            >
-              Registrar entrega
-            </button>
+            <div class="control-button-grid">
 
-            <button
-              id="openDeliveriesPageBtn"
-              class="btn btn-secondary full-btn"
-            >
-              Entregas registradas
-            </button>
+              <button
+                id="openDeliveryModalBtn"
+                class="btn btn-primary"
+              >
+                Registrar entrega
+              </button>
 
-            <button
-              id="completeActivityBtn"
-              class="btn btn-primary full-btn"
-            >
-              Concluir desafio
-            </button>
+              <button
+                id="openDeliveriesPageBtn"
+                class="btn btn-secondary"
+              >
+                Entregas registradas
+              </button>
 
-            <button
-              id="editCurrentActivityBtn"
-              class="btn btn-secondary full-btn"
-            >
-              Editar atividade
-            </button>
+              <button
+                id="completeActivityBtn"
+                class="btn btn-primary"
+              >
+                Concluir desafio
+              </button>
 
-            <button
-              id="deleteCurrentActivityBtn"
-              class="btn btn-danger full-btn"
-            >
-              Excluir atividade
-            </button>
+              <button
+                id="editCurrentActivityBtn"
+                class="btn btn-secondary"
+              >
+                Editar atividade
+              </button>
+
+              <button
+                id="deleteCurrentActivityBtn"
+                class="btn btn-danger control-danger"
+              >
+                Excluir atividade
+              </button>
+
+            </div>
 
           </aside>
 
@@ -662,6 +685,7 @@
 
             <div>
               <h2>Entregas registradas</h2>
+              <p class="hint">Textos enviados pelos membros nesta atividade.</p>
             </div>
 
             <button
@@ -689,6 +713,7 @@
 
             <div>
               <h2>Biblioteca</h2>
+              <p class="hint">Textos registrados no projeto.</p>
             </div>
 
             <button
@@ -715,10 +740,11 @@
           <div class="panel no-print">
 
             <h2>Relatórios</h2>
+            <p class="hint">Gere, copie ou imprima relatórios.</p>
 
             <form id="reportForm" class="form">
 
-              <label>Tipo</label>
+              <label for="reportType">Tipo</label>
 
               <select id="reportType">
                 <option value="members">
@@ -742,31 +768,41 @@
                 </option>
               </select>
 
-              <label>Início</label>
-              <input type="date" id="reportStart"/>
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="reportStart">Início</label>
+                  <input type="date" id="reportStart"/>
+                </div>
 
-              <label>Fim</label>
-              <input type="date" id="reportEnd"/>
+                <div class="form-group">
+                  <label for="reportEnd">Fim</label>
+                  <input type="date" id="reportEnd"/>
+                </div>
+              </div>
 
-              <button type="submit" class="btn btn-primary">
-                Gerar relatório
-              </button>
+              <div class="report-actions">
+                <button type="submit" class="btn btn-primary">
+                  Gerar relatório
+                </button>
+
+                <button
+                  type="button"
+                  id="copyReportBtn"
+                  class="btn btn-secondary hidden"
+                >
+                  Copiar relatório
+                </button>
+
+                <button
+                  type="button"
+                  id="printReportBtn"
+                  class="btn btn-secondary"
+                >
+                  Imprimir / PDF
+                </button>
+              </div>
 
             </form>
-
-            <button
-              id="copyReportBtn"
-              class="btn btn-secondary full-btn hidden"
-            >
-              Copiar relatório
-            </button>
-
-            <button
-              id="printReportBtn"
-              class="btn btn-secondary full-btn"
-            >
-              Imprimir / PDF
-            </button>
 
           </div>
 
@@ -792,79 +828,91 @@
 
         <div class="settings-grid">
 
-          <div class="panel">
+          <div class="panel settings-card">
 
             <h2>Tipos de pontuação</h2>
 
-            <form id="scoreTypeForm" class="form">
+            <form id="scoreTypeForm" class="form settings-form">
 
-              <input
-                type="text"
-                id="scoreTypeName"
-                placeholder="Nome"
-              />
+              <div class="form-grid-2">
+                <input
+                  type="text"
+                  id="scoreTypeName"
+                  placeholder="Nome do tipo"
+                />
 
-              <input
-                type="number"
-                id="scoreTypeValue"
-                placeholder="Pontos"
-              />
+                <input
+                  type="number"
+                  id="scoreTypeValue"
+                  placeholder="Pontos"
+                />
+              </div>
 
               <button type="submit" class="btn btn-primary">
-                Salvar
+                Salvar tipo
               </button>
 
             </form>
 
-            <div id="scoreTypesList" class="list"></div>
+            <div id="scoreTypesList" class="list settings-list"></div>
 
           </div>
 
-          <div class="panel">
+          <div class="panel settings-card">
 
             <h2>Responsáveis</h2>
 
-            <form id="responsibleForm" class="form">
+            <form id="responsibleForm" class="form settings-form">
 
               <input
                 type="text"
                 id="responsibleName"
-                placeholder="Nome"
+                placeholder="Nome do responsável"
               />
 
               <button type="submit" class="btn btn-primary">
-                Salvar
+                Salvar responsável
               </button>
 
             </form>
 
-            <div id="responsiblesList" class="list"></div>
+            <div id="responsiblesList" class="list settings-list"></div>
 
           </div>
 
-          <div class="panel">
+          <div class="panel settings-card">
 
             <h2>Backup</h2>
+            <p class="hint">Exporte ou importe os dados da plataforma.</p>
 
-            <button
-              id="exportBackupBtn"
-              class="btn btn-primary full-btn"
-            >
-              Exportar backup
-            </button>
+            <div class="backup-actions">
+              <button
+                id="exportBackupBtn"
+                class="btn btn-primary"
+              >
+                Exportar backup
+              </button>
 
-            <input
-              type="file"
-              id="importBackupInput"
-            />
+              <label for="importBackupInput" class="file-label">
+                Escolher arquivo
+              </label>
+
+              <input
+                type="file"
+                id="importBackupInput"
+              />
+            </div>
 
             <p id="backupMessage"></p>
 
           </div>
 
-          <div class="panel danger-panel">
+          <div class="panel danger-panel settings-card">
 
             <h2>Limpar pontuações</h2>
+            <p class="hint">
+              Esta ação apaga os registros e zera os pontos dos membros.
+            </p>
 
             <button
               id="clearPointsBtn"
@@ -897,12 +945,13 @@
       data-close-modal="createActivityModal"
     ></div>
 
-    <div class="modal-card">
+    <div class="modal-card form-modal-card">
 
       <div class="modal-header">
 
         <div>
           <h2>Nova atividade</h2>
+          <p>Preencha os dados da atividade.</p>
         </div>
 
         <button
@@ -918,31 +967,49 @@
 
         <form id="activityForm" class="form">
 
-          <label>Título</label>
+          <label for="activityTitle">Título</label>
           <input type="text" id="activityTitle"/>
 
-          <label>Descrição</label>
+          <label for="activityDescription">Descrição</label>
           <textarea id="activityDescription" rows="5"></textarea>
 
-          <label>Prazo</label>
-          <input type="date" id="activityDeadline"/>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label for="activityDeadline">Prazo</label>
+              <input type="date" id="activityDeadline"/>
+            </div>
 
-          <label>Pontos</label>
-          <input type="number" id="activityPoints"/>
+            <div class="form-group">
+              <label for="activityPoints">Pontos</label>
+              <input type="number" id="activityPoints"/>
+            </div>
 
-          <label>Bônus vencedor</label>
-          <input type="number" id="activityWinnerPoints"/>
+            <div class="form-group">
+              <label for="activityWinnerPoints">Bônus vencedor</label>
+              <input type="number" id="activityWinnerPoints"/>
+            </div>
+          </div>
 
-          <label>Status</label>
+          <label for="activityStatus">Status</label>
 
           <select id="activityStatus">
             <option value="Aberta">Aberta</option>
             <option value="Encerrada">Encerrada</option>
           </select>
 
-          <button type="submit" class="btn btn-primary">
-            Salvar atividade
-          </button>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-close-modal="createActivityModal"
+            >
+              Cancelar
+            </button>
+
+            <button type="submit" class="btn btn-primary">
+              Salvar atividade
+            </button>
+          </div>
 
         </form>
 
@@ -964,12 +1031,13 @@
       data-close-modal="deliveryModal"
     ></div>
 
-    <div class="modal-card">
+    <div class="modal-card form-modal-card">
 
       <div class="modal-header">
 
         <div>
           <h2>Registrar entrega</h2>
+          <p>Selecione o membro e cole o texto entregue.</p>
         </div>
 
         <button
@@ -988,7 +1056,7 @@
           <input type="hidden" id="deliveryActivityId"/>
           <input type="hidden" id="editingDeliveryId"/>
 
-          <label>Membro</label>
+          <label for="deliveryMember">Membro</label>
 
           <select id="deliveryMember">
             <option value="">
@@ -996,20 +1064,31 @@
             </option>
           </select>
 
-          <label>Texto</label>
+          <label for="deliveryText">Texto entregue</label>
 
           <textarea
             id="deliveryText"
-            rows="12"
+            rows="8"
+            placeholder="Cole aqui o texto entregue..."
           ></textarea>
 
-          <button
-            type="submit"
-            id="saveDeliveryBtn"
-            class="btn btn-primary"
-          >
-            Registrar entrega
-          </button>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-close-modal="deliveryModal"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              id="saveDeliveryBtn"
+              class="btn btn-primary"
+            >
+              Registrar entrega
+            </button>
+          </div>
 
         </form>
 
@@ -1031,12 +1110,13 @@
       data-close-modal="createTextModal"
     ></div>
 
-    <div class="modal-card">
+    <div class="modal-card form-modal-card">
 
       <div class="modal-header">
 
         <div>
           <h2>Registrar texto</h2>
+          <p>Cadastre um texto na biblioteca.</p>
         </div>
 
         <button
@@ -1052,40 +1132,57 @@
 
         <form id="textForm" class="form">
 
-          <label>Membro</label>
+          <label for="textMember">Membro</label>
           <select id="textMember"></select>
 
-          <label>Título</label>
+          <label for="textTitle">Título</label>
           <input type="text" id="textTitle"/>
 
-          <label>Tipo</label>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="textType">Tipo</label>
 
-          <select id="textType">
-            <option value="Sinopse">Sinopse</option>
-            <option value="Prólogo">Prólogo</option>
-            <option value="Capítulo">Capítulo</option>
-            <option value="Cena">Cena</option>
-            <option value="Outro">Outro</option>
-          </select>
+              <select id="textType">
+                <option value="Sinopse">Sinopse</option>
+                <option value="Prólogo">Prólogo</option>
+                <option value="Capítulo">Capítulo</option>
+                <option value="Cena">Cena</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
 
-          <label>Texto</label>
+            <div class="form-group">
+              <label for="textStatus">Status</label>
+
+              <select id="textStatus">
+                <option value="Pendente">Pendente</option>
+                <option value="Lido">Lido</option>
+                <option value="Comentado">Comentado</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="textContent">Texto</label>
 
           <textarea
             id="textContent"
-            rows="12"
+            rows="8"
+            placeholder="Cole o texto aqui..."
           ></textarea>
 
-          <label>Status</label>
+          <div class="modal-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-close-modal="createTextModal"
+            >
+              Cancelar
+            </button>
 
-          <select id="textStatus">
-            <option value="Pendente">Pendente</option>
-            <option value="Lido">Lido</option>
-            <option value="Comentado">Comentado</option>
-          </select>
-
-          <button type="submit" class="btn btn-primary">
-            Salvar texto
-          </button>
+            <button type="submit" class="btn btn-primary">
+              Salvar texto
+            </button>
+          </div>
 
         </form>
 
@@ -1130,11 +1227,74 @@
 
       <div
         id="textViewerContent"
-        class="modal-content"
+        class="modal-content reading-modal-content"
       ></div>
 
     </div>
 
+  </div>
+
+  <!-- MODAL DE AVISO -->
+
+  <div id="systemMessageModal" class="modal hidden">
+    <div class="modal-backdrop" data-close-modal="systemMessageModal"></div>
+
+    <div class="modal-card small-modal">
+      <div class="modal-header">
+        <div>
+          <h2 id="systemMessageTitle">Aviso</h2>
+          <p id="systemMessageText"></p>
+        </div>
+
+        <button class="modal-close" data-close-modal="systemMessageModal">
+          ×
+        </button>
+      </div>
+
+      <div class="modal-actions standalone-actions">
+        <button id="systemMessageOkBtn" class="btn btn-primary">
+          Entendi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMAÇÃO -->
+
+  <div id="systemConfirmModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+
+    <div class="modal-card small-modal">
+      <div class="modal-header">
+        <div>
+          <h2 id="systemConfirmTitle">Confirmar ação</h2>
+          <p id="systemConfirmText"></p>
+        </div>
+      </div>
+
+      <div class="modal-actions standalone-actions">
+        <button id="systemConfirmCancelBtn" class="btn btn-secondary">
+          Cancelar
+        </button>
+
+        <button id="systemConfirmOkBtn" class="btn btn-danger">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CARREGAMENTO -->
+
+  <div id="systemLoadingModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+
+    <div class="modal-card small-modal loading-card">
+      <div class="loading-spinner"></div>
+
+      <h2 id="systemLoadingTitle">Processando...</h2>
+      <p id="systemLoadingText">Aguarde alguns instantes.</p>
+    </div>
   </div>
 
   <script type="module" src="js/app.js"></script>
