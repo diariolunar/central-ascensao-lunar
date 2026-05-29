@@ -86,7 +86,6 @@ const generateGeneralRankingBtn = $("generateGeneralRankingBtn");
 const generalRankingList = $("generalRankingList");
 
 const openCreateActivityModalBtn = $("openCreateActivityModalBtn");
-const createActivityModal = $("createActivityModal");
 const activityForm = $("activityForm");
 const activityTitle = $("activityTitle");
 const activityDescription = $("activityDescription");
@@ -103,7 +102,6 @@ const openDeliveriesPageBtn = $("openDeliveriesPageBtn");
 const backToActivityBtn = $("backToActivityBtn");
 const deliveriesList = $("deliveriesList");
 
-const deliveryModal = $("deliveryModal");
 const activityDeliveryForm = $("activityDeliveryForm");
 const deliveryActivityId = $("deliveryActivityId");
 const editingDeliveryId = $("editingDeliveryId");
@@ -119,8 +117,6 @@ const editCurrentActivityBtn = $("editCurrentActivityBtn");
 const deleteCurrentActivityBtn = $("deleteCurrentActivityBtn");
 
 const openCreateTextModalBtn = $("openCreateTextModalBtn");
-const createTextModal = $("createTextModal");
-const textViewerModal = $("textViewerModal");
 const textViewerTitle = $("textViewerTitle");
 const textViewerMeta = $("textViewerMeta");
 const textViewerContent = $("textViewerContent");
@@ -157,18 +153,15 @@ const reportArea = $("reportArea");
 const printReportBtn = $("printReportBtn");
 const copyReportBtn = $("copyReportBtn");
 
-const systemMessageModal = $("systemMessageModal");
 const systemMessageTitle = $("systemMessageTitle");
 const systemMessageText = $("systemMessageText");
 const systemMessageOkBtn = $("systemMessageOkBtn");
 
-const systemConfirmModal = $("systemConfirmModal");
 const systemConfirmTitle = $("systemConfirmTitle");
 const systemConfirmText = $("systemConfirmText");
 const systemConfirmCancelBtn = $("systemConfirmCancelBtn");
 const systemConfirmOkBtn = $("systemConfirmOkBtn");
 
-const systemLoadingModal = $("systemLoadingModal");
 const systemLoadingTitle = $("systemLoadingTitle");
 const systemLoadingText = $("systemLoadingText");
 
@@ -859,7 +852,7 @@ function createRankingItemHTML(item, index) {
 }
 
 /* =========================================================
-   ATIVIDADES
+   ATIVIDADES COM PONTUAÇÃO AUTOMÁTICA
 ========================================================= */
 
 openCreateActivityModalBtn.addEventListener("click", () => {
@@ -1000,7 +993,7 @@ activityDeliveryForm.addEventListener("submit", async (event) => {
         return;
       }
 
-      deliveries.push({
+      const newDelivery = {
         id: crypto.randomUUID(),
         memberId: member.id,
         memberName: member.name || "",
@@ -1009,7 +1002,22 @@ activityDeliveryForm.addEventListener("submit", async (event) => {
         date: new Date().toISOString().slice(0, 10),
         pointsGiven: false,
         winnerPointsGiven: false
-      });
+      };
+
+      if (Number(activity.points || 0) !== 0) {
+        await addPointToMember({
+          member,
+          value: Number(activity.points || 0),
+          reason: `Entrega da atividade: ${activity.title}`,
+          date: new Date().toISOString().slice(0, 10),
+          responsible: "Sistema",
+          origin: "activity-delivery"
+        });
+
+        newDelivery.pointsGiven = true;
+      }
+
+      deliveries.push(newDelivery);
     }
 
     await updateDoc(doc(db, "activities", activity.id), { deliveries });
@@ -1017,10 +1025,21 @@ activityDeliveryForm.addEventListener("submit", async (event) => {
     activityDeliveryForm.reset();
     closeModal("deliveryModal");
 
+    await loadMembers();
+    await loadPoints();
     await loadActivities();
-    openActivityDetail(activity.id);
 
-    showMessage("Entrega salva", editingId ? "A entrega foi atualizada." : "A entrega foi registrada com sucesso.");
+    openActivityDetail(activity.id);
+    updateDashboard();
+
+    showMessage(
+      "Entrega salva",
+      editingId
+        ? "A entrega foi atualizada. A edição não lança pontos novamente."
+        : Number(activity.points || 0) !== 0
+          ? "A entrega foi registrada e os pontos foram lançados automaticamente."
+          : "A entrega foi registrada. Nenhum ponto foi lançado porque a atividade está com 0 pontos."
+    );
   } catch (error) {
     console.error(error);
     showMessage("Erro ao salvar", "Não foi possível salvar a entrega.");
@@ -1036,7 +1055,9 @@ activityWinnerForm.addEventListener("submit", async (event) => {
 
   if (!activity) return;
 
-  const delivery = (activity.deliveries || []).find(
+  const deliveries = [...(activity.deliveries || [])];
+
+  const delivery = deliveries.find(
     (item) => item.memberId === activityWinnerSelect.value
   );
 
@@ -1045,20 +1066,50 @@ activityWinnerForm.addEventListener("submit", async (event) => {
     return;
   }
 
-  showLoading("Salvando vencedor...", "Registrando vencedor do desafio.");
+  const member = allMembers.find((item) => item.id === delivery.memberId);
+
+  if (!member) {
+    showMessage("Membro não encontrado", "Não foi possível encontrar o membro vencedor.");
+    return;
+  }
+
+  showLoading("Salvando vencedor...", "Registrando vencedor e verificando pontuação automática.");
 
   try {
+    if (!delivery.winnerPointsGiven && Number(activity.winnerPoints || 0) !== 0) {
+      await addPointToMember({
+        member,
+        value: Number(activity.winnerPoints || 0),
+        reason: `Vencedor da atividade: ${activity.title}`,
+        date: new Date().toISOString().slice(0, 10),
+        responsible: "Sistema",
+        origin: "activity-winner"
+      });
+
+      delivery.winnerPointsGiven = true;
+    }
+
     await updateDoc(doc(db, "activities", activity.id), {
       winner: {
         memberId: delivery.memberId,
         name: delivery.memberName
-      }
+      },
+      deliveries
     });
 
+    await loadMembers();
+    await loadPoints();
     await loadActivities();
-    openActivityDetail(activity.id);
 
-    showMessage("Vencedor salvo", "O vencedor foi salvo com sucesso.");
+    openActivityDetail(activity.id);
+    updateDashboard();
+
+    showMessage(
+      "Vencedor salvo",
+      delivery.winnerPointsGiven && Number(activity.winnerPoints || 0) !== 0
+        ? "O vencedor foi salvo e o bônus foi lançado automaticamente. Se ele já havia recebido antes, o sistema evita duplicar."
+        : "O vencedor foi salvo. Nenhum bônus foi lançado porque a atividade está com 0 pontos extras."
+    );
   } catch (error) {
     console.error(error);
     showMessage("Erro ao salvar vencedor", "Não foi possível salvar o vencedor.");
@@ -1318,6 +1369,16 @@ function createDeliveryCardHTML(activity, delivery) {
         <span class="delivery-date">${formatDate(delivery.date)}</span>
       </div>
 
+      <div class="badges-row">
+        <span class="badge ${delivery.pointsGiven ? "green" : "purple"}">
+          ${delivery.pointsGiven ? "Entrega pontuada" : "Entrega sem pontos"}
+        </span>
+
+        <span class="badge ${delivery.winnerPointsGiven ? "green" : "blue"}">
+          ${delivery.winnerPointsGiven ? "Bônus recebido" : "Sem bônus"}
+        </span>
+      </div>
+
       <p class="delivery-preview">${escapeHTML(delivery.text || "")}</p>
 
       <div class="delivery-actions">
@@ -1373,7 +1434,7 @@ deliveriesList.addEventListener("click", async (event) => {
   if (action === "delete-delivery") {
     const confirmed = await showConfirm(
       "Excluir entrega",
-      "Deseja excluir esta entrega?"
+      "Deseja excluir esta entrega? Os pontos lançados automaticamente não serão removidos do histórico."
     );
 
     if (!confirmed) return;
